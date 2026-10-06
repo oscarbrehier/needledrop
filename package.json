@@ -1,0 +1,33 @@
+{
+  "name": "needledrop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "tsx --env-file=.env src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.29.3",
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
+    "@tidal-music/api": "^0.50.0",
+    "@tidal-music/auth": "^1.6.2",
+    "better-sqlite3": "^13.0.3",
+    "commander": "^15.0.0",
+    "p-queue": "^9.3.3",
+    "sqlite-vec": "^0.1.9",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "type": "module"
+}
