@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import process from "node:process";
+import { migrate } from "./db/migrate.js";
 
 const program = new Command();
 
@@ -17,7 +18,12 @@ program
 program
 	.command("db:migrate")
 	.description("Create or update the local database by applying any new migration files")
-	.action(notImplemented("db:migrate"));
+	.action(() => {
+
+		const applied = migrate();
+		console.log(applied.length ? `Applied: ${applied.join(", ")}` : "Nothing to apply");
+
+	});
 
 const auth = program
 	.command("auth")
