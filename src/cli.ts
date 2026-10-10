@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import process from "node:process";
 import { migrate } from "./db/migrate.js";
+import { getAccessToken, getAuthStatus, login } from "./tidal/auth.js";
 
 const program = new Command();
 
@@ -32,12 +33,15 @@ const auth = program
 auth
 	.command("login", { isDefault: true })
 	.description("Log in to Tidal in the browser and save the token for later commands")
-	.action(notImplemented("auth login"));
+	.action(login);
 
 auth
 	.command("status")
 	.description("Show which Tidal account is logged in")
-	.action(notImplemented("auth status"));
+	.action(async () => {
+		const user = await getAuthStatus();
+		console.log(`Logged in to Tidal as ${user.username} (id ${user.id}, country ${user.country})`);
+	});
 
 program
 	.command("sync")
