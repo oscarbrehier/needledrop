@@ -1,0 +1,75 @@
+import { getDatabase } from "./client.js";
+
+export type PlaylistRow = {
+	tidalId: string;
+	name: string;
+};
+
+export type TrackRow = {
+	tidalId: string;
+	isrc: string | null;
+	title: string;
+	artist: string | null;
+	album: string | null;
+	durationS: number | null;
+	raw: string;
+};
+
+export type PlaylistTrackRow = {
+	trackId: string;
+	position: number;
+};
+
+export function upsertPlaylist(playlist: PlaylistRow): void {
+
+	const db = getDatabase();
+
+	db
+		.prepare(`
+			INSERT INTO playlists (tidal_id, name)
+			VALUES (@tidalId, @name)
+			ON CONFLICT (tidal_id) DO UPDATE SET name = excluded.name
+		`)
+		.run(playlist);
+
+};
+
+export function upsertTrack(track: TrackRow): void {
+
+	const db = getDatabase();
+	db
+		.prepare(`
+			INSERT INTO tracks (tidal_id, isrc, title, artist, album, duration_s, raw)
+			VALUES (@tidalId, @isrc, @title, @artist, @album, @durationS, @raw)
+			ON CONFLICT (tidal_id) DO UPDATE SET
+				isrc       = excluded.isrc,
+				title      = excluded.title,
+				artist     = excluded.artist,
+				album      = excluded.album,
+				duration_s = excluded.duration_s,
+				raw        = excluded.raw
+		`)
+		.run(track);
+
+};
+ 
+export function replacePlaylistTracks(playlistId: string, rows: PlaylistTrackRow[]): void {
+
+	const db = getDatabase();
+
+	const remove = db.prepare("DELETE FROM playlist_tracks WHERE playlist_id = ?");
+	const insert = db.prepare(`
+			INSERT INTO playlist_tracks (playlist_id, track_id, position)
+			VALUES (@playlistId, @trackId, @position)
+		`);
+
+	const replaceAll = db.transaction(() => {
+		remove.run(playlistId);
+		for (const row of rows) {
+			insert.run({ playlistId, trackId: row.trackId, position: row.position });
+		};
+	});
+
+	replaceAll();
+
+};

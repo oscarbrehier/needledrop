@@ -1,7 +1,10 @@
 import { Command } from "commander";
 import process from "node:process";
 import { migrate } from "./db/migrate.js";
-import { getAccessToken, getAuthStatus, login } from "./tidal/auth.js";
+import { login } from "./tidal/auth.js";
+import { getAuthStatus } from "./tidal/user.js";
+import { paginate } from "./tidal/client.js";
+import { syncLibrary } from "./tidal/sync.js";
 
 const program = new Command();
 
@@ -46,7 +49,14 @@ auth
 program
 	.command("sync")
 	.description("Copy your Tidal playlists and their tracks into the local database")
-	.action(notImplemented("sync"));
+	.option("--playlist <name>", "Sync only the playlist with this name")
+	.action(async (opts: { playlist?: string }) => {
+		const summary = await syncLibrary(opts);
+		console.log(
+			`Synced ${summary.playlists} playlists, ${summary.tracks} tracks, ` +
+			`${summary.uniqueIsrcs} unique ISRCs, ${summary.skipped} skipped`
+		);
+	});
 
 program
 	.command("enrich")
