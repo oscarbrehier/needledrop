@@ -1,5 +1,5 @@
 CREATE TABLE tracks (
-	tidal_id TEXT PRIMARY KEY,
+tidal_id TEXT PRIMARY KEY,
 	isrc TEXT,
 	title TEXT NOT NULL,
 	artist TEXT,
