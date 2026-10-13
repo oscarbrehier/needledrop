@@ -3,12 +3,10 @@ import process from "node:process";
 import { migrate } from "./db/migrate.js";
 import { login } from "./tidal/auth.js";
 import { getAuthStatus } from "./tidal/user.js";
-import { paginate } from "./tidal/client.js";
 import { syncLibrary } from "./tidal/sync.js";
-import { lookupLastfm } from "./enrich/lastfm.js";
-import { getEnricher } from "./enrich/index.js";
+import { getEnricher, listEnrichers } from "./enrich/index.js";
 import { runEnricher } from "./enrich/runner.js";
-import { lookupMusicbrainz } from "./enrich/musicbrainz.js";
+import { coverage } from "./db/enrichment.js";
 
 const program = new Command();
 
@@ -78,20 +76,24 @@ program
 	});
 
 program
-	.command("tag")
-	.description("Generate structured tags and a short description for each recording with the LLM")
-	.action(async () => {
+	.command("coverage")
+	.description("Show how many tracks each enrichment source has found")
+	.action(() => {
 
-		const tags = await lookupLastfm({
-			title: "Walk this Way (feat. Aerosmith)",
-			artist: "Run-DMC, Aerosmith",
-			tidalId: "1",
-			isrc: null
+		const rows = listEnrichers().map((enricher) => {
+			const c = coverage(enricher.source);
+			const share = c.total ? Math.round((c.found / c.total) * 100) : 0;
+			return { source: enricher.source, ...c, "found %": share };
 		});
 
-		console.log(tags);
+		console.table(rows);
 
 	});
+
+program
+	.command("tag")
+	.description("Generate structured tags and a short description for each recording with the LLM")
+	.action(notImplemented("tag"));
 
 program
 	.command("embed")

@@ -1,8 +1,9 @@
 import { lastfm } from "./lastfm.js";
 import { musicbrainz } from "./musicbrainz.js";
+import { reccobeats } from "./reccobeats.js";
 import { type Enricher } from "./types.js";
 
-const enrichers: Enricher[] = [lastfm, musicbrainz];
+const enrichers: Enricher[] = [lastfm, musicbrainz, reccobeats];
 
 export function getEnricher(name: string): Enricher {
 
@@ -16,4 +17,8 @@ export function getEnricher(name: string): Enricher {
 
 	return enricher;
 
+};
+
+export function listEnrichers() {
+	return enrichers;
 };
