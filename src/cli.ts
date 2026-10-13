@@ -5,6 +5,10 @@ import { login } from "./tidal/auth.js";
 import { getAuthStatus } from "./tidal/user.js";
 import { paginate } from "./tidal/client.js";
 import { syncLibrary } from "./tidal/sync.js";
+import { lookupLastfm } from "./enrich/lastfm.js";
+import { getEnricher } from "./enrich/index.js";
+import { runEnricher } from "./enrich/runner.js";
+import { lookupMusicbrainz } from "./enrich/musicbrainz.js";
 
 const program = new Command();
 
@@ -61,12 +65,33 @@ program
 program
 	.command("enrich")
 	.description("Fetch tags, genres and audio features for each track from Last.fm, MusicBrainz and ReccoBeats")
-	.action(notImplemented("enrich"));
+	.requiredOption("--source <name>", "Which source to query, for example lastfm")
+	.option("--limit <n>", "Only process this many pending tracks")
+	.action(async (opts: { source: string; limit?: string }) => {
+
+		const enricher = getEnricher(opts.source);
+		const limit = opts.limit ? Number.parseInt(opts.limit, 10) : undefined;
+
+		const summary = await runEnricher(enricher, { limit });
+		console.log(`${enricher.source}: ${summary.found} found, ${summary.notFound} not found, ${summary.failed} failed`);
+
+	});
 
 program
 	.command("tag")
 	.description("Generate structured tags and a short description for each recording with the LLM")
-	.action(notImplemented("tag"));
+	.action(async () => {
+
+		const tags = await lookupLastfm({
+			title: "Walk this Way (feat. Aerosmith)",
+			artist: "Run-DMC, Aerosmith",
+			tidalId: "1",
+			isrc: null
+		});
+
+		console.log(tags);
+
+	});
 
 program
 	.command("embed")

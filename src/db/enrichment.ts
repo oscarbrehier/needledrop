@@ -40,7 +40,7 @@ export function saveEnrichment(trackId: string, source: string, payload: unknown
 		INSERT INTO enrichment (track_id, source, payload)
 		VALUES (@trackId, @source, @payload)
 		ON CONFLICT (track_id, source) DO UPDATE SET
-			payload		= excluded.payload
+			payload		= excluded.payload,
 			fetched_at	= datetime('now')	
 	`).run({
 		trackId,

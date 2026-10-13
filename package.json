@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest run",
+    "test": "tsx --test tests/*.test.ts",
     "dev": "tsx --env-file=.env src/cli.ts",
     "typecheck": "tsc --noEmit"
   },
