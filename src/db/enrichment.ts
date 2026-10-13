@@ -35,7 +35,7 @@ export function selectPendingTracks(source: string, limit?: number): EnrichTrack
 export function saveEnrichment(trackId: string, source: string, payload: unknown | null): void {
 
 	const db = getDatabase();
-	
+
 	db.prepare(`
 		INSERT INTO enrichment (track_id, source, payload)
 		VALUES (@trackId, @source, @payload)
@@ -47,5 +47,23 @@ export function saveEnrichment(trackId: string, source: string, payload: unknown
 		source,
 		payload: payload === null ? null : JSON.stringify(payload)
 	});
+
+};
+
+export type Coverage = { total: number; found: number; notFound: number; pending: number };
+
+export function coverage(source: string): Coverage {
+
+	return getDatabase()
+		.prepare(`
+			SELECT
+				COUNT(*)                                          AS total,
+				TOTAL(e.payload IS NOT NULL)                      AS found,
+				TOTAL(e.track_id IS NOT NULL AND e.payload IS NULL) AS notFound,
+				TOTAL(e.track_id IS NULL)                         AS pending
+			FROM tracks t
+			LEFT JOIN enrichment e ON e.track_id = t.tidal_id AND e.source = ?
+		`)
+		.get(source) as Coverage;
 
 };
