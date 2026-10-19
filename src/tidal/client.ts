@@ -1,5 +1,6 @@
 import PQueue from "p-queue";
 import { getAccessToken } from "./auth.js";
+import { sleep } from "../utils/sleep.js";
 
 const BASE_URL = "https://openapi.tidal.com/v2";
 
@@ -20,10 +21,6 @@ export type Page = {
 	included?: Resource[];
 	links?: { next?: string };
 };
-
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function resolveUrl(endpoint: string): string {
 	if (endpoint.startsWith("http")) return endpoint;

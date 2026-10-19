@@ -1,0 +1,28 @@
+export const MOODS = {
+	calm: "still, relaxed, low tension",
+	dreamy: "hazy, floating, atmospheric",
+	melancholic: "sad, wistful, sorrowful",
+	bittersweet: "sad and happy at once",
+	nostalgic: "looking back, evokes a past era or memory",
+	reflective: "thoughtful, introspective",
+	romantic: "about love or desire, warm",
+	tender: "gentle, intimate, soft",
+	sensual: "slow, seductive, physical",
+	hopeful: "looking forward, quietly optimistic",
+	uplifting: "lifts the mood, inspiring",
+	joyful: "plainly happy, carefree",
+	playful: "light, fun, witty",
+	euphoric: "peak, ecstatic, hands in the air",
+	energetic: "driving, high momentum",
+	groovy: "rhythm-first, makes you move",
+	confident: "swagger, assertive",
+	defiant: "rebellious, standing up",
+	angry: "furious, bitter",
+	aggressive: "harsh, forceful, abrasive",
+	tense: "anxious, suspenseful",
+	dark: "heavy, ominous, bleak",
+	mysterious: "enigmatic, eerie",
+	epic: "grand, cinematic, building",
+} as const;
+
+export type Mood = keyof typeof MOODS;
