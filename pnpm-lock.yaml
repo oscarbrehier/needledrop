@@ -39,6 +39,9 @@ importers:
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4
+      csv-parse:
+        specifier: ^7.0.3
+        version: 7.0.3
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
@@ -701,6 +704,9 @@ packages:
   commander@15.0.0:
     resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
     engines: {node: '>=22.12.0'}
+
+  csv-parse@7.0.3:
+    resolution: {integrity: sha512-YFd3QM/yo17vH91L1IOZuvl09zM0zEEtdfTcOCKWcMdM++MNaQSyp09slXyFCLaPXvHstQFx/xC8myiFHSMUvw==}
 
   define-data-property@1.1.4:
     resolution: {integrity: sha512-rBMvIzlpA8v6E+SJZoo++HAYqsLrkg7MSfIinMPFhmkorw7X+dOXVJQs+QT69zGkzMyfDnIMN2Wid1+NbL3T+A==}
@@ -1502,6 +1508,8 @@ snapshots:
   chai@6.3.0: {}
 
   commander@15.0.0: {}
+
+  csv-parse@7.0.3: {}
 
   define-data-property@1.1.4:
     dependencies:

@@ -7,6 +7,10 @@ import { syncLibrary } from "./tidal/sync.js";
 import { getEnricher, listEnrichers } from "./enrich/index.js";
 import { runEnricher } from "./enrich/runner.js";
 import { coverage } from "./db/enrichment.js";
+import { selectRecordingsToTag } from "./db/tags.js";
+import { buildTrackInput } from "./tag/input.js";
+import { buildMessages } from "./tag/prompt.js";
+import { runTagging, selectCandidates } from "./tag/run.js";
 
 const program = new Command();
 
@@ -93,7 +97,31 @@ program
 program
 	.command("tag")
 	.description("Generate structured tags and a short description for each recording with the LLM")
-	.action(notImplemented("tag"));
+	.option("--playlist <name>", "Only tag recordings from this playlist")
+	.option("--limit <n>", "Only tag this many recordings")
+	.option("--dry-run", "Print what would be sent to the model, without calling it")
+	.option("--retag", "Also re-tag recordings whose stored prompt version is out of date")
+	.action(async (opts: { playlist?: string; limit?: string; dryRun?: boolean; retag?: boolean }) => {
+
+		const limit = opts.limit ? Number.parseInt(opts.limit, 10) : undefined;
+
+		if (opts.dryRun) {
+
+			const rows = selectRecordingsToTag({ playlist: opts.playlist });
+			const { toTag, skipped } = selectCandidates(rows, { limit, retag: opts.retag });
+			const inputs = toTag.map(buildTrackInput);
+
+			console.error(`${inputs.length} recordings to tag, ${skipped} already up to date`);
+			console.log(JSON.stringify(inputs, null, 2));
+			console.log(JSON.stringify(buildMessages(inputs.slice(0, 20)), null, 2));
+			return;
+
+		}
+
+		const summary = await runTagging({ playlist: opts.playlist, limit, retag: opts.retag });
+		console.log(`${summary.tagged} tagged, ${summary.failed} failed, ${summary.skipped} skipped`);
+
+	});
 
 program
 	.command("embed")
