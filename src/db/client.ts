@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import * as sqliteVec from "sqlite-vec";
 import { databasePath } from "../config.js";
 
 let db: Database.Database | undefined;
@@ -13,6 +14,7 @@ export function getDatabase(): Database.Database {
 		db = new Database(databasePath);
 		db.pragma("journal_mode = WAL");
 		db.pragma("foreign_keys = ON");
+		sqliteVec.load(db);
 	};
 
 	return db;

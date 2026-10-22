@@ -288,11 +288,11 @@ Hints:
 
 The goal is that every tagged recording has a vector, and that similar tracks sit near each other.
 
-- [ ] Add migration `002` with a `vec0` virtual table holding a track id and a 1,024-dimension vector, the size `bge-m3` produces ([model card](https://huggingface.co/Xenova/bge-m3))
-- [ ] In `embedder.ts`, load the model once and expose `embed(texts)`
-- [ ] Build the text to embed from the tags and description, and leave title and artist out
-- [ ] Embed in batches of 16 to 32, and store each vector with the model name
-- [ ] Add a `similar <track>` command that prints the ten nearest neighbours
+- [x] Add migration `002` with a `vec0` virtual table holding a track id and a 1,024-dimension vector, the size `bge-m3` produces ([model card](https://huggingface.co/Xenova/bge-m3))
+- [x] In `embedder.ts`, load the model once and expose `embed(texts)`
+- [x] Build the text to embed from the tags and description, and leave title and artist out
+- [x] Embed in batches of 16 to 32, and store each vector with the model name
+- [x] Add a `similar <track>` command that prints the ten nearest neighbours
 
 Hints:
 

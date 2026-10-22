@@ -73,3 +73,35 @@ export function replacePlaylistTracks(playlistId: string, rows: PlaylistTrackRow
 	replaceAll();
 
 };
+
+export type ResolvedTrack = { isrc: string; title: string; artist: string | null };
+
+// Accepts either a Tidal track id or an exact (case-insensitive) title, since
+// that is what's easy to copy out of the Tidal app.
+export function resolveIsrc(input: string): ResolvedTrack {
+
+	const db = getDatabase();
+
+	const byId = db
+		.prepare("SELECT isrc, title, artist FROM tracks WHERE tidal_id = ?")
+		.get(input) as ResolvedTrack | undefined;
+
+	if (byId) {
+		if (!byId.isrc) throw new Error(`Track "${byId.title}" (${input}) has no ISRC, so it was never tagged or embedded.`);
+		return byId;
+	};
+
+	const matches = db
+		.prepare("SELECT DISTINCT isrc, title, artist FROM tracks WHERE title = ? COLLATE NOCASE AND isrc IS NOT NULL")
+		.all(input) as ResolvedTrack[];
+
+	if (matches.length === 0) throw new Error(`No track found matching "${input}".`);
+
+	if (matches.length > 1) {
+		const names = matches.map((m) => `${m.title} — ${m.artist ?? "unknown"} (${m.isrc})`).join("\n  ");
+		throw new Error(`Multiple tracks match "${input}", use the Tidal id instead:\n  ${names}`);
+	};
+
+	return matches[0]!;
+
+};

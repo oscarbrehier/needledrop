@@ -11,6 +11,9 @@ import { selectRecordingsToTag } from "./db/tags.js";
 import { buildTrackInput } from "./tag/input.js";
 import { buildMessages } from "./tag/prompt.js";
 import { runTagging, selectCandidates } from "./tag/run.js";
+import { findNearest } from "./db/embeddings.js";
+import { resolveIsrc } from "./db/library.js";
+import { embedAll } from "./embed/run.js";
 
 const program = new Command();
 
@@ -126,13 +129,28 @@ program
 program
 	.command("embed")
 	.description("Compute a vector for each tagged recording")
-	.action(notImplemented("sync"));
+	.action(async () => {
+		const summary = await embedAll();
+		console.log(`${summary.embedded} embedded, ${summary.skipped} already up to date`);
+	});
 
 program
 	.command("similar")
 	.argument("<track>", "Title or Tidal id of the track to find neighbours for")
 	.description("Print the ten tracks nearest to a given track")
-	.action(notImplemented("similar"));
+	.action((track: string) => {
+
+		const target = resolveIsrc(track);
+		const neighbours = findNearest(target.isrc, 10);
+
+		console.log(`Nearest to ${target.title} — ${target.artist ?? "unknown"}:`);
+		console.table(neighbours.map((n) => ({
+			title: n.title,
+			artist: n.artist ?? "unknown",
+			distance: n.distance.toFixed(4),
+		})));
+
+	});
 
 program
 	.command("make")
