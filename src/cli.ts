@@ -162,8 +162,16 @@ program
 
 		if (opts.explain) console.error(`Filters: ${JSON.stringify(parsed)}`);
 
-		const { candidates, relaxedEnergy } = await searchCandidates(parsed);
+		const { candidates, relaxedEnergy, hardFilteredCount } = await searchCandidates(parsed);
 		if (relaxedEnergy) console.error("Too few matches in that energy range, so it was relaxed.");
+
+		if (candidates.length < parsed.size) {
+			const hasEnergyFilter = !relaxedEnergy && (parsed.energyMin !== undefined || parsed.energyMax !== undefined);
+			console.error(
+				`Only ${candidates.length} of the requested ${parsed.size} tracks matched well enough; ` +
+				`${hardFilteredCount} tracks matched the language${hasEnergyFilter ? " and energy" : ""} filter alone.`
+			);
+		};
 
 		const rows = buildPlaylist(candidates, parsed.size);
 

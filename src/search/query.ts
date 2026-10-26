@@ -22,14 +22,15 @@ type Row = {
 	confidence: "low" | "medium" | "high";
 };
 
-type Filters = {
+type HardFilters = {
 	languages?: string[];
-	moods?: string[];
 	energyMin?: number;
 	energyMax?: number;
 };
 
-function selectCandidateRows(filters: Filters): Row[] {
+// Languages and energy are facts about the track, so they stay hard SQL
+// filters. Moods are "feel", handled afterwards as a ranking preference.
+function selectCandidateRows(filters: HardFilters): Row[] {
 
 	const params: (string | number)[] = [];
 
@@ -52,14 +53,6 @@ function selectCandidateRows(filters: Filters): Row[] {
 		params.push(...filters.languages);
 	};
 
-	if (filters.moods?.length) {
-		query += ` AND EXISTS (
-			SELECT 1 FROM json_each(tg.payload, '$.moods')
-			WHERE value IN (${filters.moods.map(() => "?").join(",")})
-		)`;
-		params.push(...filters.moods);
-	};
-
 	if (filters.energyMin !== undefined) {
 		query += " AND json_extract(tg.payload, '$.energy') >= ?";
 		params.push(filters.energyMin);
@@ -70,9 +63,8 @@ function selectCandidateRows(filters: Filters): Row[] {
 		params.push(filters.energyMax);
 	};
 
-	// A guessed mood or energy should never be the reason a low-confidence
-	// track gets selected, so these two filters exclude it outright.
-	if (filters.moods?.length || filters.energyMin !== undefined || filters.energyMax !== undefined) {
+	// A guessed energy should never be the reason a low-confidence track gets selected.
+	if (filters.energyMin !== undefined || filters.energyMax !== undefined) {
 		query += " AND json_extract(tg.payload, '$.confidence') != 'low'";
 	};
 
@@ -88,7 +80,17 @@ function dot(a: Float32Array, b: Float32Array): number {
 	return sum;
 };
 
-export type SearchResult = { candidates: Candidate[]; relaxedEnergy: boolean };
+// How much a mood overlap pulls a track up the ranking. Small relative to the
+// usual spread in distance (roughly 0.3-0.6 in practice), so it nudges rather
+// than overrides semantic similarity.
+const MOOD_BONUS = 0.05;
+const MIN_MOOD_MATCHES = 1;
+
+export type SearchResult = {
+	candidates: Candidate[];
+	relaxedEnergy: boolean;
+	hardFilteredCount: number;
+};
 
 export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResult> {
 
@@ -96,31 +98,55 @@ export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResu
 	let relaxedEnergy = false;
 
 	if (rows.length < parsed.size && (parsed.energyMin !== undefined || parsed.energyMax !== undefined)) {
-		rows = selectCandidateRows({ languages: parsed.languages, moods: parsed.moods });
+		rows = selectCandidateRows({ languages: parsed.languages });
 		relaxedEnergy = true;
 	};
+
+	const hardFilteredCount = rows.length;
 
 	const [queryVector] = await embed([parsed.semantic]);
 	const vectors = getVectors(rows.map((r) => r.isrc));
 
-	const candidates: Candidate[] = rows
+	let candidates: (Candidate & { moodMatches: number })[] = rows
 		.filter((row) => vectors.has(row.isrc))
-		.map((row) => ({
-			isrc: row.isrc,
-			title: row.title,
-			artist: row.artist,
-			moods: JSON.parse(row.moodsJson) as string[],
-			energy: row.energy,
-			confidence: row.confidence,
-			distance: 1 - dot(queryVector!, vectors.get(row.isrc)!),
-		}));
+		.map((row) => {
 
-	// Low confidence never outranks a real match, regardless of similarity.
+			const moods = JSON.parse(row.moodsJson) as string[];
+
+			// A guessed mood should never be the reason a low-confidence track
+			// clears the minimum-match bar, so its overlap counts as zero.
+			const moodMatches = (!parsed.moods?.length || row.confidence === "low")
+				? 0
+				: moods.filter((m) => (parsed.moods as string[]).includes(m)).length;
+
+			return {
+				isrc: row.isrc,
+				title: row.title,
+				artist: row.artist,
+				moods,
+				energy: row.energy,
+				confidence: row.confidence,
+				distance: 1 - dot(queryVector!, vectors.get(row.isrc)!),
+				moodMatches,
+			};
+
+		});
+
+	if (parsed.moods?.length) {
+		candidates = candidates.filter((c) => c.moodMatches >= MIN_MOOD_MATCHES);
+	};
+
 	candidates.sort((a, b) => {
 		if ((a.confidence === "low") !== (b.confidence === "low")) return a.confidence === "low" ? 1 : -1;
-		return a.distance - b.distance;
+		const scoreA = a.distance - a.moodMatches * MOOD_BONUS;
+		const scoreB = b.distance - b.moodMatches * MOOD_BONUS;
+		return scoreA - scoreB;
 	});
 
-	return { candidates, relaxedEnergy };
+	return {
+		candidates: candidates.map(({ moodMatches: _moodMatches, ...c }) => c),
+		relaxedEnergy,
+		hardFilteredCount,
+	};
 
 };
