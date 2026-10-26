@@ -1,4 +1,5 @@
 import { type PlaylistRow, type PlaylistTrackRow, replacePlaylistTracks, type TrackRow, upsertPlaylist, upsertTrack } from "../db/library.js";
+import { getGeneratedPlaylistIds } from "../db/playlists.js";
 import { paginate, type Resource } from "./client.js";
 
 export type SyncSummary = {
@@ -12,12 +13,14 @@ export async function syncLibrary(options: { playlist?: string }): Promise<SyncS
 
 	const first = "/userCollectionPlaylists/me/relationships/items?include=items";
 	const wanted = options.playlist?.toLowerCase();
+	const generatedIds = getGeneratedPlaylistIds();
 	const playlists: PlaylistRow[] = [];
 
 	for await (const page of paginate(first)) {
 		for (const item of page.included ?? []) {
 
 			if (item.type !== "playlists") continue;
+			if (generatedIds.has(item.id)) continue;
 
 			const name = String(item.attributes?.name ?? "");
 			if (wanted && name.toLowerCase() !== wanted) continue;

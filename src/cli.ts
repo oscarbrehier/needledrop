@@ -12,11 +12,13 @@ import { buildTrackInput } from "./tag/input.js";
 import { buildMessages } from "./tag/prompt.js";
 import { runTagging, selectCandidates } from "./tag/run.js";
 import { findNearest } from "./db/embeddings.js";
-import { resolveIsrc } from "./db/library.js";
+import { resolveIsrc, resolveTidalId } from "./db/library.js";
+import { saveGeneratedPlaylist } from "./db/playlists.js";
 import { embedAll } from "./embed/run.js";
 import { parsePrompt } from "./search/parse.js";
 import { searchCandidates } from "./search/query.js";
 import { buildPlaylist } from "./search/builder.js";
+import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
 
 const program = new Command();
 
@@ -155,7 +157,9 @@ program
 	.description("Build a playlist from your library that matches a text prompt")
 	.option("--size <n>", "Override how many tracks to return")
 	.option("--explain", "Print the parsed filters")
-	.action(async (prompt: string, opts: { size?: string; explain?: boolean }) => {
+	.option("--save", "Create the playlist in Tidal (preview only, unless passed)")
+	.option("--name <text>", "Name for the saved playlist (default: derived from the prompt)")
+	.action(async (prompt: string, opts: { size?: string; explain?: boolean; save?: boolean; name?: string }) => {
 
 		const parsed = await parsePrompt(prompt);
 		if (opts.size) parsed.size = Number.parseInt(opts.size, 10);
@@ -183,6 +187,28 @@ program
 			distance: row.distance.toFixed(4),
 			flag: row.lowConfidence ? "low confidence" : "",
 		})));
+
+		if (!opts.save) return;
+
+		const trackIds = rows
+			.map((row) => resolveTidalId(row.isrc))
+			.filter((id): id is string => id !== null);
+
+		if (trackIds.length === 0) throw new Error("Nothing to save: none of the matched tracks resolved to a Tidal id.");
+
+		const name = opts.name ?? defaultPlaylistName(prompt);
+		const tidalId = await createPlaylist(name, buildPlaylistDescription(prompt));
+
+		await addItems(tidalId, trackIds);
+
+		saveGeneratedPlaylist({
+			tidalId,
+			prompt,
+			filters: parsed,
+			trackIds: rows.map((row) => row.isrc),
+		});
+
+		console.log(`Saved "${name}" to Tidal (${tidalId}), ${trackIds.length} tracks.`);
 
 	});
 

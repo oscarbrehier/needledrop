@@ -74,6 +74,18 @@ export function replacePlaylistTracks(playlistId: string, rows: PlaylistTrackRow
 
 };
 
+// Picks one Tidal track id for a recording, since a playlist item needs an
+// id and an ISRC can have several (album, single, compilation...).
+export function resolveTidalId(isrc: string): string | null {
+
+	const row = getDatabase()
+		.prepare("SELECT tidal_id AS tidalId FROM tracks WHERE isrc = ? LIMIT 1")
+		.get(isrc) as { tidalId: string } | undefined;
+
+	return row?.tidalId ?? null;
+
+};
+
 export type ResolvedTrack = { isrc: string; title: string; artist: string | null };
 
 // Accepts either a Tidal track id or an exact (case-insensitive) title, since
