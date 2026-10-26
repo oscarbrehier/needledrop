@@ -51,6 +51,35 @@ export function saveEmbedding(isrc: string, vector: Float32Array, model: string,
 
 };
 
+// For ranking search candidates in plain TypeScript rather than through vec0.
+export function getVectors(isrcs: string[]): Map<string, Float32Array> {
+
+	if (isrcs.length === 0) return new Map();
+
+	const db = getDatabase();
+	const placeholders = isrcs.map(() => "?").join(",");
+
+	const mapping = db
+		.prepare(`SELECT isrc, rowid FROM embeddings WHERE isrc IN (${placeholders})`)
+		.all(...isrcs) as { isrc: string; rowid: number }[];
+
+	const vectors = new Map<string, Float32Array>();
+
+	for (const { isrc, rowid } of mapping) {
+
+		const row = db.prepare("SELECT embedding FROM embeddings_vec WHERE rowid = ?").get(BigInt(rowid)) as
+			{ embedding: Buffer } | undefined;
+
+		if (row) {
+			vectors.set(isrc, new Float32Array(row.embedding.buffer, row.embedding.byteOffset, row.embedding.byteLength / 4));
+		};
+
+	};
+
+	return vectors;
+
+};
+
 export type Neighbour = { isrc: string; title: string; artist: string | null; distance: number };
 
 export function findNearest(isrc: string, k: number): Neighbour[] {

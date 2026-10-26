@@ -307,11 +307,11 @@ Hints:
 
 The goal is that `make "<prompt>"` prints a ranked list of tracks from your library.
 
-- [ ] In `parse.ts`, have the LLM turn the prompt into a Zod-validated object: hard filters, a semantic query string, and a size
-- [ ] In `query.ts`, select candidate ids with SQL filters, then rank those candidates by vector distance to the embedded query
-- [ ] In `builder.ts`, shape the list: one row per ISRC, at most two tracks per artist, cut to size
-- [ ] Print a table: position, title, artist, moods, distance
-- [ ] Add `--size <n>` and `--explain`, which prints the parsed filters
+- [x] In `parse.ts`, have the LLM turn the prompt into a Zod-validated object: hard filters, a semantic query string, and a size
+- [x] In `query.ts`, select candidate ids with SQL filters, then rank those candidates by vector distance to the embedded query
+- [x] In `builder.ts`, shape the list: one row per ISRC, at most two tracks per artist, cut to size
+- [x] Print a table: position, title, artist, moods, distance
+- [x] Add `--size <n>` and `--explain`, which prints the parsed filters
 
 The parsed prompt is the contract between the two halves of search:
 

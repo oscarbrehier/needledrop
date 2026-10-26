@@ -14,14 +14,11 @@ import { runTagging, selectCandidates } from "./tag/run.js";
 import { findNearest } from "./db/embeddings.js";
 import { resolveIsrc } from "./db/library.js";
 import { embedAll } from "./embed/run.js";
+import { parsePrompt } from "./search/parse.js";
+import { searchCandidates } from "./search/query.js";
+import { buildPlaylist } from "./search/builder.js";
 
 const program = new Command();
-
-function notImplemented(name: string) {
-	return () => {
-		throw new Error(`${name}: not implemented`);
-	};
-};
 
 program
 	.name("needledrop")
@@ -156,7 +153,30 @@ program
 	.command("make")
 	.argument("<prompt>", "What you want to hear, in plain words")
 	.description("Build a playlist from your library that matches a text prompt")
-	.action(notImplemented("make"));
+	.option("--size <n>", "Override how many tracks to return")
+	.option("--explain", "Print the parsed filters")
+	.action(async (prompt: string, opts: { size?: string; explain?: boolean }) => {
+
+		const parsed = await parsePrompt(prompt);
+		if (opts.size) parsed.size = Number.parseInt(opts.size, 10);
+
+		if (opts.explain) console.error(`Filters: ${JSON.stringify(parsed)}`);
+
+		const { candidates, relaxedEnergy } = await searchCandidates(parsed);
+		if (relaxedEnergy) console.error("Too few matches in that energy range, so it was relaxed.");
+
+		const rows = buildPlaylist(candidates, parsed.size);
+
+		console.table(rows.map((row, i) => ({
+			"#": i + 1,
+			title: row.title,
+			artist: row.artist ?? "unknown",
+			moods: row.moods.join(", "),
+			distance: row.distance.toFixed(4),
+			flag: row.lowConfidence ? "low confidence" : "",
+		})));
+
+	});
 
 try {
 	await program.parseAsync();
