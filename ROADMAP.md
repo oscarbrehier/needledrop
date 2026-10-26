@@ -336,11 +336,11 @@ Hints:
 
 The goal is that `--save` creates the playlist in Tidal, and that nothing is written without it.
 
-- [ ] Make preview the default and require `--save` to write
-- [ ] Create the playlist, then add tracks in small batches through the same rate-limited queue
-- [ ] Add `--name <text>`, with a default derived from the prompt
-- [ ] Record each generated playlist locally: prompt, parsed filters, track ids, date
-- [ ] Exclude generated playlists from `sync`, so they do not feed back into your library data
+- [x] Make preview the default and require `--save` to write
+- [x] Create the playlist, then add tracks in small batches through the same rate-limited queue
+- [x] Add `--name <text>`, with a default derived from the prompt
+- [x] Record each generated playlist locally: prompt, parsed filters, track ids, date
+- [x] Exclude generated playlists from `sync`, so they do not feed back into your library data
 
 Hints:
 
