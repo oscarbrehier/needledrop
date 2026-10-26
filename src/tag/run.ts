@@ -1,5 +1,5 @@
-import process from "node:process";
 import { type RecordingToTag, saveTags, selectRecordingsToTag } from "../db/tags.js";
+import { Progress } from "../utils/progress.js";
 import { sleep } from "../utils/sleep.js";
 import { buildTrackInput, type TrackInput } from "./input.js";
 import { MODEL, tagBatch } from "./mistral.js";
@@ -121,41 +121,75 @@ function validate(candidate: unknown): Tags | undefined {
 };
 
 // Sends every row through the model in batches of BATCH_SIZE, retrying a row
-// once on its own if it is missing from the answer or fails validation.
-// Returns only the rows that ended up with valid tags; a row missing from the
-// result failed twice and should be treated as failed by the caller.
+// once on its own (individually, or as a whole batch if the batch call itself
+// failed) if it is missing from the answer or fails validation. Calls
+// onResult as soon as each row's outcome is known, so a crash partway through
+// a long run only loses the current batch, not everything saved so far.
+// Returns only the rows that ended up with valid tags.
 export async function tagAll(
 	rows: RecordingToTag[],
-	options: { model?: string; promptVersion?: string } = {},
+	options: { model?: string; promptVersion?: string; onResult?: (isrc: string, tags: Tags) => void } = {},
 ): Promise<Map<string, Tags>> {
 
 	const results = new Map<string, Tags>();
 	const usage: Usage[] = [];
 	const batches = chunk(rows, BATCH_SIZE);
+	const progress = new Progress("tag", rows.length);
+	const counts = { tagged: 0, failed: 0 };
+	let done = 0;
 
-	for (const [i, batch] of batches.entries()) {
+	function succeed(row: RecordingToTag, tags: Tags): void {
+		results.set(row.isrc, tags);
+		options.onResult?.(row.isrc, tags);
+		counts.tagged++;
+		done++;
+		progress.update(done, row.title, counts);
+	};
 
-		process.stderr.write(`\rTagging batch ${i + 1}/${batches.length}`.padEnd(40));
+	function fail(row: RecordingToTag): void {
+		counts.failed++;
+		done++;
+		progress.update(done, row.title, counts);
+	};
+
+	for (const batch of batches) {
 
 		const inputs = batch.map(buildTrackInput);
-		const byIsrc = await call(usage, inputs, options);
+		let byIsrc: Map<string, unknown>;
+
+		try {
+			byIsrc = await call(usage, inputs, options);
+		} catch (err) {
+			progress.error(`tag batch failed: ${err instanceof Error ? err.message : err}`);
+			byIsrc = new Map();
+		};
 
 		const retry: RecordingToTag[] = [];
 		for (const row of batch) {
 			const tags = validate(byIsrc.get(row.isrc));
-			if (tags) results.set(row.isrc, tags);
+			if (tags) succeed(row, tags);
 			else retry.push(row);
 		};
 
 		for (const row of retry) {
-			const single = await call(usage, [buildTrackInput(row)], options);
+
+			let single: Map<string, unknown>;
+
+			try {
+				single = await call(usage, [buildTrackInput(row)], options);
+			} catch (err) {
+				progress.error(`tag retry failed for "${row.title}": ${err instanceof Error ? err.message : err}`);
+				single = new Map();
+			};
+
 			const tags = validate(single.get(row.isrc));
-			if (tags) results.set(row.isrc, tags);
+			if (tags) succeed(row, tags); else fail(row);
+
 		};
 
 	};
 
-	if (batches.length) process.stderr.write("\n");
+	progress.finish();
 	return results;
 
 };
@@ -169,22 +203,12 @@ export async function runTagging(options: {
 	const rows = selectRecordingsToTag({ playlist: options.playlist });
 	const { toTag, skipped } = selectCandidates(rows, options);
 
-	const results = await tagAll(toTag);
+	const results = await tagAll(toTag, {
+		onResult: (isrc, tags) => saveTags(isrc, tags, MODEL, PROMPT_VERSION),
+	});
 
-	let tagged = 0;
-	let failed = 0;
-
-	for (const row of toTag) {
-
-		const tags = results.get(row.isrc);
-		if (tags) {
-			saveTags(row.isrc, tags, MODEL, PROMPT_VERSION);
-			tagged++;
-		} else {
-			failed++;
-		};
-
-	};
+	const tagged = results.size;
+	const failed = toTag.length - tagged;
 
 	return { tagged, failed, skipped };
 

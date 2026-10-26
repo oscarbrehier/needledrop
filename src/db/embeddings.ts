@@ -1,15 +1,20 @@
 import { type Tags } from "../tag/schema.js";
 import { getDatabase } from "./client.js";
 
-export type RecordingToEmbed = { isrc: string; tags: Tags };
+export type RecordingToEmbed = { isrc: string; title: string; tags: Tags };
 
 export function selectTaggedRecordings(): RecordingToEmbed[] {
 
 	const rows = getDatabase()
-		.prepare("SELECT isrc, payload FROM tags")
-		.all() as { isrc: string; payload: string }[];
+		.prepare(`
+			SELECT tg.isrc, t.title, tg.payload
+			FROM tags tg
+			JOIN tracks t ON t.isrc = tg.isrc
+			GROUP BY tg.isrc
+		`)
+		.all() as { isrc: string; title: string; payload: string }[];
 
-	return rows.map((row) => ({ isrc: row.isrc, tags: JSON.parse(row.payload) as Tags }));
+	return rows.map((row) => ({ isrc: row.isrc, title: row.title, tags: JSON.parse(row.payload) as Tags }));
 
 };
 
