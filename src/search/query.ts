@@ -11,6 +11,8 @@ export type Candidate = {
 	energy: number;
 	confidence: "low" | "medium" | "high";
 	distance: number;
+	// distance minus the mood-match bonus — what candidates are actually sorted by.
+	score: number;
 };
 
 type Row = {
@@ -119,6 +121,8 @@ export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResu
 				? 0
 				: moods.filter((m) => (parsed.moods as string[]).includes(m)).length;
 
+			const distance = 1 - dot(queryVector!, vectors.get(row.isrc)!);
+
 			return {
 				isrc: row.isrc,
 				title: row.title,
@@ -126,7 +130,8 @@ export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResu
 				moods,
 				energy: row.energy,
 				confidence: row.confidence,
-				distance: 1 - dot(queryVector!, vectors.get(row.isrc)!),
+				distance,
+				score: distance - moodMatches * MOOD_BONUS,
 				moodMatches,
 			};
 
@@ -138,9 +143,7 @@ export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResu
 
 	candidates.sort((a, b) => {
 		if ((a.confidence === "low") !== (b.confidence === "low")) return a.confidence === "low" ? 1 : -1;
-		const scoreA = a.distance - a.moodMatches * MOOD_BONUS;
-		const scoreB = b.distance - b.moodMatches * MOOD_BONUS;
-		return scoreA - scoreB;
+		return a.score - b.score;
 	});
 
 	return {

@@ -185,6 +185,7 @@ program
 			artist: row.artist ?? "unknown",
 			moods: row.moods.join(", "),
 			distance: row.distance.toFixed(4),
+			score: row.score.toFixed(4),
 			flag: row.lowConfidence ? "low confidence" : "",
 		})));
 
