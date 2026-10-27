@@ -20,6 +20,8 @@ import { parsePrompt } from "./search/parse.js";
 import { searchCandidates } from "./search/query.js";
 import { buildPlaylist } from "./search/builder.js";
 import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
+import { getOverride, saveOverride } from "./db/tagOverrides.js";
+import { TagOverrideInput } from "./tag/schema.js";
 
 async function confirm(message: string): Promise<boolean> {
 	const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -156,6 +158,32 @@ program
 
 		const summary = await runTagging({ playlist: opts.playlist, limit, retag: opts.retag });
 		console.log(`${summary.tagged} tagged, ${summary.failed} failed, ${summary.skipped} skipped`);
+
+	});
+
+program
+	.command("override")
+	.argument("<isrc>", "ISRC of the recording to correct")
+	.description("Record a manual correction on top of the model's tags (search applies it, tag/--retag never writes it)")
+	.option("--languages <list>", "Comma-separated languages, e.g. english,french")
+	.option("--moods <list>", "Comma-separated moods from the fixed list")
+	.option("--energy <n>", "Energy from 1 to 5")
+	.option("--note <text>", "Why you're overriding this")
+	.action((isrc: string, opts: { languages?: string; moods?: string; energy?: string; note?: string }) => {
+
+		if (!opts.languages && !opts.moods && !opts.energy) {
+			throw new Error("Pass at least one of --languages, --moods or --energy.");
+		};
+
+		const input = TagOverrideInput.parse({
+			languages: opts.languages?.split(",").map((s) => s.trim().toLowerCase()),
+			moods: opts.moods?.split(",").map((s) => s.trim().toLowerCase()),
+			energy: opts.energy ? Number.parseInt(opts.energy, 10) : undefined,
+			note: opts.note,
+		});
+
+		saveOverride(isrc, input);
+		console.log(`Override saved for ${isrc}: ${JSON.stringify(getOverride(isrc))}`);
 
 	});
 

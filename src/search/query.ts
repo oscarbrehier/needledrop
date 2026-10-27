@@ -22,6 +22,7 @@ type Row = {
 	moodsJson: string;
 	energy: number;
 	confidence: "low" | "medium" | "high";
+	hasMoodOverride: 0 | 1;
 };
 
 type HardFilters = {
@@ -29,6 +30,14 @@ type HardFilters = {
 	energyMin?: number;
 	energyMax?: number;
 };
+
+// A manual tag_overrides row (see db/tagOverrides.ts) replaces the model's
+// value for whichever fields it sets. COALESCE picks the override when
+// present, so a correction is honoured by both the hard filters below and
+// the mood ranking further down, without changing the stored tags.
+const EFFECTIVE_LANGUAGES = "COALESCE(ov.languages, json_extract(tg.payload, '$.languages'))";
+const EFFECTIVE_MOODS = "COALESCE(ov.moods, json_extract(tg.payload, '$.moods'))";
+const EFFECTIVE_ENERGY = "COALESCE(ov.energy, json_extract(tg.payload, '$.energy'))";
 
 // Languages and energy are facts about the track, so they stay hard SQL
 // filters. Moods are "feel", handled afterwards as a ranking preference.
@@ -39,35 +48,38 @@ function selectCandidateRows(filters: HardFilters): Row[] {
 	let query = `
 		SELECT
 			t.isrc, t.title, t.artist,
-			json_extract(tg.payload, '$.moods') AS moodsJson,
-			json_extract(tg.payload, '$.energy') AS energy,
-			json_extract(tg.payload, '$.confidence') AS confidence
+			${EFFECTIVE_MOODS} AS moodsJson,
+			${EFFECTIVE_ENERGY} AS energy,
+			json_extract(tg.payload, '$.confidence') AS confidence,
+			(ov.moods IS NOT NULL) AS hasMoodOverride
 		FROM tags tg
 		JOIN tracks t ON t.isrc = tg.isrc
+		LEFT JOIN tag_overrides ov ON ov.isrc = t.isrc
 		WHERE 1 = 1
 	`;
 
 	if (filters.languages?.length) {
 		query += ` AND EXISTS (
-			SELECT 1 FROM json_each(tg.payload, '$.languages')
+			SELECT 1 FROM json_each(${EFFECTIVE_LANGUAGES})
 			WHERE value IN (${filters.languages.map(() => "?").join(",")})
 		)`;
 		params.push(...filters.languages);
 	};
 
 	if (filters.energyMin !== undefined) {
-		query += " AND json_extract(tg.payload, '$.energy') >= ?";
+		query += ` AND ${EFFECTIVE_ENERGY} >= ?`;
 		params.push(filters.energyMin);
 	};
 
 	if (filters.energyMax !== undefined) {
-		query += " AND json_extract(tg.payload, '$.energy') <= ?";
+		query += ` AND ${EFFECTIVE_ENERGY} <= ?`;
 		params.push(filters.energyMax);
 	};
 
-	// A guessed energy should never be the reason a low-confidence track gets selected.
+	// A guessed energy should never be the reason a low-confidence track gets
+	// selected — but a human override is not a guess, so it bypasses this.
 	if (filters.energyMin !== undefined || filters.energyMax !== undefined) {
-		query += " AND json_extract(tg.payload, '$.confidence') != 'low'";
+		query += " AND (ov.energy IS NOT NULL OR json_extract(tg.payload, '$.confidence') != 'low')";
 	};
 
 	query += " GROUP BY t.isrc";
@@ -116,8 +128,9 @@ export async function searchCandidates(parsed: ParsedPrompt): Promise<SearchResu
 			const moods = JSON.parse(row.moodsJson) as string[];
 
 			// A guessed mood should never be the reason a low-confidence track
-			// clears the minimum-match bar, so its overlap counts as zero.
-			const moodMatches = (!parsed.moods?.length || row.confidence === "low")
+			// clears the minimum-match bar, so its overlap counts as zero —
+			// unless a human override set the moods, which is not a guess.
+			const moodMatches = (!parsed.moods?.length || (row.confidence === "low" && !row.hasMoodOverride))
 				? 0
 				: moods.filter((m) => (parsed.moods as string[]).includes(m)).length;
 
