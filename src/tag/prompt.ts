@@ -37,9 +37,10 @@ const VARIANTS: Record<string, PromptVariant> = {
 			...v2.extraEvidenceNotes,
 			"An artist's nationality, name or usual language is not evidence for which language is sung on this\n" +
 			"  specific track: plenty of French, German or other non-English artists record entirely in English,\n" +
-			"  and vice versa. Judge the language from the lyrics or wiki text, never from where the artist is from.\n" +
-			"  A ReccoBeats instrumentalness of 0.5 or higher is strong evidence the track is \"instrumental\",\n" +
-			"  regardless of the artist's usual genre or language.",
+			"  and vice versa. Judge the language from the lyrics, wiki text or your own knowledge of the track,\n" +
+			"  never from where the artist is from. ReccoBeats' instrumentalness estimate is noisy: only let a\n" +
+			"  high instrumentalness (0.5 or more) push you toward \"instrumental\" when you have no other evidence\n" +
+			"  of vocals. If you know, or the wiki or lyrics show, that the track has vocals, that wins.",
 		],
 		moodsIntro: v2.moodsIntro,
 	},
