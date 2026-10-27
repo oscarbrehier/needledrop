@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import process from "node:process";
+import { createInterface } from "node:readline/promises";
 import { migrate } from "./db/migrate.js";
 import { login } from "./tidal/auth.js";
 import { getAuthStatus } from "./tidal/user.js";
@@ -19,6 +20,13 @@ import { parsePrompt } from "./search/parse.js";
 import { searchCandidates } from "./search/query.js";
 import { buildPlaylist } from "./search/builder.js";
 import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
+
+async function confirm(message: string): Promise<boolean> {
+	const rl = createInterface({ input: process.stdin, output: process.stdout });
+	const answer = await rl.question(`${message} [y/N] `);
+	rl.close();
+	return answer.trim().toLowerCase() === "y";
+};
 
 const program = new Command();
 
@@ -103,9 +111,17 @@ program
 	.option("--limit <n>", "Only tag this many recordings")
 	.option("--dry-run", "Print what would be sent to the model, without calling it")
 	.option("--retag", "Also re-tag recordings whose stored prompt version is out of date")
-	.action(async (opts: { playlist?: string; limit?: string; dryRun?: boolean; retag?: boolean }) => {
+	.option("--all", "Required alongside --retag to re-tag across the whole library, not just one playlist")
+	.action(async (opts: { playlist?: string; limit?: string; dryRun?: boolean; retag?: boolean; all?: boolean }) => {
 
 		const limit = opts.limit ? Number.parseInt(opts.limit, 10) : undefined;
+
+		if (opts.retag && !opts.playlist && !opts.all) {
+			throw new Error(
+				"--retag would re-tag across your whole library. Pass --playlist <name> to scope it, " +
+				"or --all to confirm you want the whole library."
+			);
+		};
 
 		if (opts.dryRun) {
 
@@ -119,6 +135,24 @@ program
 			return;
 
 		}
+
+		if (opts.retag) {
+
+			const rows = selectRecordingsToTag({ playlist: opts.playlist });
+			const { toTag } = selectCandidates(rows, { limit, retag: true });
+
+			if (toTag.length === 0) {
+				console.log("Nothing to re-tag.");
+				return;
+			};
+
+			console.error(`This will re-tag ${toTag.length} recordings.`);
+			if (!await confirm("Proceed?")) {
+				console.log("Aborted.");
+				return;
+			};
+
+		};
 
 		const summary = await runTagging({ playlist: opts.playlist, limit, retag: opts.retag });
 		console.log(`${summary.tagged} tagged, ${summary.failed} failed, ${summary.skipped} skipped`);
