@@ -14,21 +14,34 @@ type PromptVariant = {
 	moodsIntro: string;
 };
 
+const v2: PromptVariant = {
+	extraEvidenceNotes: [
+		"Audio features describe how a track sounds, not what it is about or how it feels. Do not infer\n" +
+		"  mood from tempo or energy alone: a fast or loud track can still be tender, melancholic or defiant\n" +
+		"  depending on its lyrics, reputation and era, and a quiet track can still be tense or dark.",
+	],
+	moodsIntro:
+		"moods: one to three moods, most important first, chosen only from this list. Base them on what the\n" +
+		"song is actually about and how it feels to someone who knows it, from its lyrics, reputation and\n" +
+		"era, not from genre labels or audio-feature vibes alone:",
+};
+
 const VARIANTS: Record<string, PromptVariant> = {
 	v1: {
 		extraEvidenceNotes: [],
 		moodsIntro: "moods: one to three moods, most important first, chosen only from this list:",
 	},
-	v2: {
+	v2,
+	v3: {
 		extraEvidenceNotes: [
-			"Audio features describe how a track sounds, not what it is about or how it feels. Do not infer\n" +
-			"  mood from tempo or energy alone: a fast or loud track can still be tender, melancholic or defiant\n" +
-			"  depending on its lyrics, reputation and era, and a quiet track can still be tense or dark.",
+			...v2.extraEvidenceNotes,
+			"An artist's nationality, name or usual language is not evidence for which language is sung on this\n" +
+			"  specific track: plenty of French, German or other non-English artists record entirely in English,\n" +
+			"  and vice versa. Judge the language from the lyrics or wiki text, never from where the artist is from.\n" +
+			"  A ReccoBeats instrumentalness of 0.5 or higher is strong evidence the track is \"instrumental\",\n" +
+			"  regardless of the artist's usual genre or language.",
 		],
-		moodsIntro:
-			"moods: one to three moods, most important first, chosen only from this list. Base them on what the\n" +
-			"song is actually about and how it feels to someone who knows it, from its lyrics, reputation and\n" +
-			"era, not from genre labels or audio-feature vibes alone:",
+		moodsIntro: v2.moodsIntro,
 	},
 };
 
