@@ -7,6 +7,7 @@ import { syncLibrary } from "./tidal/sync.js";
 import { getEnricher, listEnrichers } from "./enrich/index.js";
 import { runEnricher } from "./enrich/runner.js";
 import { coverage } from "./db/enrichment.js";
+import { startServer } from "./server/app.js";
 
 const program = new Command();
 
@@ -111,6 +112,14 @@ program
 	.argument("<prompt>", "What you want to hear, in plain words")
 	.description("Build a playlist from your library that matches a text prompt")
 	.action(notImplemented("make"));
+
+program
+	.command("serve")
+	.description("Start the local web UI server")
+	.option("--port <n>", "Port to listen on", "8790")
+	.action((opts: { port: string }) => {
+		startServer(Number.parseInt(opts.port, 10));
+	});
 
 try {
 	await program.parseAsync();

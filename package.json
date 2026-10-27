@@ -13,11 +13,13 @@
   "license": "ISC",
   "packageManager": "pnpm@10.29.3",
   "dependencies": {
+    "@hono/node-server": "^2.1.5",
     "@huggingface/transformers": "^4.3.0",
     "@tidal-music/api": "^0.50.0",
     "@tidal-music/auth": "^1.6.2",
     "better-sqlite3": "^13.0.3",
     "commander": "^15.0.0",
+    "hono": "^4.13.13",
     "p-queue": "^9.3.3",
     "sqlite-vec": "^0.1.9",
     "zod": "^4.6.5"
