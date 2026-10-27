@@ -104,7 +104,9 @@ function toTrackRow(track: Resource, included: Map<string, Resource>): TrackRow 
 	const artists: string[] = [];
 	for (const ref of track.relationships?.artists?.data ?? []) {
 		const name = included.get(`artists:${ref.id}`)?.attributes?.name;
-		if (name) artists.push(String(name));
+		// Trim only the ends: some Tidal names use deliberate internal double
+		// spaces (e.g. "No  Limit", "J A Y  E L E C T R O N I C A").
+		if (name) artists.push(String(name).trim());
 	};
 
 	const isrc = track.attributes?.isrc;
