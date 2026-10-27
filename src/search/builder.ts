@@ -42,10 +42,10 @@ export function buildPlaylist(candidates: Candidate[], size: number): ResultRow[
 		const dedupeKey = `${normalizeForDedupe(candidate.title)}::${primaryArtist(candidate.artist ?? "unknown").toLowerCase()}`;
 		if (seenTracks.has(dedupeKey)) continue;
 
-		// Split on "," so a featuring credit counts against each named artist,
-		// not against the exact credit string (which would let "X" and "X feat. Y"
-		// each get their own two slots).
-		const artists = (candidate.artist ?? "unknown").split(",").map((a) => a.trim().toLowerCase());
+		// Split on "," and "&" so a featuring or collab credit counts against
+		// each named artist, not against the exact credit string (which would
+		// let "X" and "X feat. Y" each get their own two slots).
+		const artists = (candidate.artist ?? "unknown").split(/[,&]/).map((a) => a.trim().toLowerCase());
 		if (artists.some((a) => (perArtist.get(a) ?? 0) >= 2)) continue;
 
 		seenTracks.add(dedupeKey);

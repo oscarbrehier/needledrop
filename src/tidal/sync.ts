@@ -1,5 +1,6 @@
 import { type PlaylistRow, type PlaylistTrackRow, replacePlaylistTracks, type TrackRow, upsertPlaylist, upsertTrack } from "../db/library.js";
 import { getGeneratedPlaylistIds } from "../db/playlists.js";
+import { buildArtistField } from "./artists.js";
 import { paginate, type Resource } from "./client.js";
 
 export type SyncSummary = {
@@ -112,7 +113,7 @@ function toTrackRow(track: Resource, included: Map<string, Resource>): TrackRow 
 		tidalId: track.id,
 		isrc: isrc ? String(isrc) : null,
 		title: String(track.attributes?.title ?? ""),
-		artist: artists.length ? artists.join(", ") : null,
+		artist: buildArtistField(artists),
 		album: null,
 		durationS: parseDuration(track.attributes?.duration),
 		raw: JSON.stringify(track)
