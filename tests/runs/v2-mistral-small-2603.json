@@ -1,0 +1,864 @@
+{
+  "promptVersion": "v2",
+  "model": "mistral-small-2603",
+  "temperature": 0,
+  "taggedAt": "2026-10-27T20:04:06.936Z",
+  "tags": {
+    "GBUM72508261": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "tense",
+        "dark",
+        "mysterious"
+      ],
+      "energy": 4,
+      "themes": [
+        "social unrest",
+        "danger",
+        "desperation"
+      ],
+      "description": "Mid-tempo rocker with churning rhythm and ominous lyrics about seeking shelter.",
+      "confidence": "high"
+    },
+    "GBUM70909413": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "nostalgic",
+        "romantic",
+        "tender"
+      ],
+      "energy": 2,
+      "themes": [
+        "lost love",
+        "grieving",
+        "romance"
+      ],
+      "description": "Quiet acoustic ballad about the end of a romance, sung with gentle melancholy.",
+      "confidence": "high"
+    },
+    "USSM17200128": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "tense",
+        "dark",
+        "defiant"
+      ],
+      "energy": 4,
+      "themes": [
+        "social unrest",
+        "desperation",
+        "urban struggle"
+      ],
+      "description": "Gritty rock anthem with raw energy, evoking social tension and rebellion.",
+      "confidence": "high"
+    },
+    "NLF057790035": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "sensual",
+        "romantic",
+        "euphoric"
+      ],
+      "energy": 4,
+      "themes": [
+        "love",
+        "desire",
+        "nightlife"
+      ],
+      "description": "Disco classic with lush harmonies and a hypnotic groove, perfect for dancing under the stars.",
+      "confidence": "high"
+    },
+    "USSM19912699": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "playful",
+        "joyful",
+        "uplifting"
+      ],
+      "energy": 4,
+      "themes": [
+        "fun",
+        "dance",
+        "celebration"
+      ],
+      "description": "Upbeat funk-rock anthem with a catchy hook, designed to get the crowd moving.",
+      "confidence": "high"
+    },
+    "FRR640790096": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "euphoric",
+        "groovy",
+        "playful"
+      ],
+      "energy": 4,
+      "themes": [
+        "dance",
+        "hip-hop",
+        "sampling"
+      ],
+      "description": "Funky, sample-heavy instrumental with a hypnotic groove and high energy.",
+      "confidence": "medium"
+    },
+    "GBAJE0401780": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "defiant",
+        "groovy"
+      ],
+      "energy": 5,
+      "themes": [
+        "old-school hip-hop",
+        "social commentary",
+        "dance"
+      ],
+      "description": "Classic early hip-hop track with powerful beats and defiant, rhythmic flow.",
+      "confidence": "high"
+    },
+    "KRA402400094": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "euphoric",
+        "energetic",
+        "groovy"
+      ],
+      "energy": 5,
+      "themes": [
+        "dance",
+        "celebration",
+        "euphoria"
+      ],
+      "description": "High-energy K-pop track with driving beats and infectious hooks, built for peak-time energy.",
+      "confidence": "high"
+    },
+    "AUUM71000134": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "dreamy",
+        "reflective",
+        "melancholic"
+      ],
+      "energy": 4,
+      "themes": [
+        "introspection",
+        "psychedelia",
+        "nostalgia"
+      ],
+      "description": "Hazy, swirling psychedelic rock with a melancholic edge, evoking inner journeys.",
+      "confidence": "high"
+    },
+    "USIR28000005": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "groovy",
+        "sensual",
+        "confident"
+      ],
+      "energy": 4,
+      "themes": [
+        "dance",
+        "celebration",
+        "urban life"
+      ],
+      "description": "Smooth disco-funk groove with a sultry vocal performance and irresistible rhythm.",
+      "confidence": "high"
+    },
+    "USPR36600001": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "sensual",
+        "romantic",
+        "tender"
+      ],
+      "energy": 3,
+      "themes": [
+        "love",
+        "spell",
+        "seduction"
+      ],
+      "description": "Soulful, slow-burning cover with deep emotional intensity and haunting vocals.",
+      "confidence": "high"
+    },
+    "USRC12403490": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "groovy",
+        "playful"
+      ],
+      "energy": 4,
+      "themes": [
+        "dance",
+        "celebration",
+        "hip-hop"
+      ],
+      "description": "High-energy rap track with infectious beats and confident, playful flow.",
+      "confidence": "high"
+    },
+    "FR7O52600110": {
+      "languages": [
+        "french"
+      ],
+      "moods": [
+        "tense",
+        "mysterious",
+        "dark"
+      ],
+      "energy": 4,
+      "themes": [
+        "rap",
+        "neurofunk",
+        "obsession"
+      ],
+      "description": "French rap track with intricate beats and a dark, hypnotic intensity.",
+      "confidence": "medium"
+    },
+    "USRH10291712": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "defiant",
+        "angry"
+      ],
+      "energy": 5,
+      "themes": [
+        "urban struggle",
+        "alienation",
+        "resilience"
+      ],
+      "description": "Raw, powerful funk anthem with a defiant spirit and gritty vocals about hard times.",
+      "confidence": "high"
+    },
+    "USWB11400620": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "melancholic",
+        "reflective",
+        "nostalgic"
+      ],
+      "energy": 2,
+      "themes": [
+        "jazz fusion",
+        "dreamy",
+        "instrumental"
+      ],
+      "description": "Smooth, atmospheric jazz fusion piece with a melancholic, reflective mood.",
+      "confidence": "high"
+    },
+    "USKLP2200336": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "epic",
+        "tense",
+        "mysterious"
+      ],
+      "energy": 3,
+      "themes": [
+        "action",
+        "cinema",
+        "instrumental"
+      ],
+      "description": "Instrumental rock anthem with soaring guitars, evoking cinematic grandeur and danger.",
+      "confidence": "high"
+    },
+    "USA176910020": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "tense",
+        "dark",
+        "defiant"
+      ],
+      "energy": 4,
+      "themes": [
+        "danger",
+        "struggle",
+        "social unrest"
+      ],
+      "description": "Churning mid-tempo rocker with urgent vocals and ominous lyrics about seeking refuge from chaos.",
+      "confidence": "high"
+    },
+    "USAR19600008": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "defiant",
+        "energetic",
+        "dark"
+      ],
+      "energy": 5,
+      "themes": [
+        "spirituality",
+        "rebellion"
+      ],
+      "description": "Raw, passionate punk-rock chant with defiant energy and dark, spiritual intensity.",
+      "confidence": "high"
+    },
+    "USQX90900765": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "defiant",
+        "energetic",
+        "mysterious"
+      ],
+      "energy": 5,
+      "themes": [
+        "psychedelic experience",
+        "rebellion",
+        "drugs"
+      ],
+      "description": "Psychedelic rock anthem with a legendary guitar riff and rebellious energy.",
+      "confidence": "high"
+    },
+    "USWB10101941": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "romantic",
+        "sensual",
+        "nostalgic"
+      ],
+      "energy": 3,
+      "themes": [
+        "love",
+        "memory",
+        "urban life"
+      ],
+      "description": "Smooth jazz fusion track with a romantic, nostalgic feel and a sultry groove.",
+      "confidence": "high"
+    },
+    "USVR18800002": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "groovy",
+        "confident"
+      ],
+      "energy": 5,
+      "themes": [
+        "funk",
+        "celebration"
+      ],
+      "description": "Funky, high-energy soul track with driving rhythm and swaggering vocals.",
+      "confidence": "high"
+    },
+    "FRS639700590": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "dreamy",
+        "mysterious"
+      ],
+      "energy": 2,
+      "themes": [],
+      "description": "Hazy, atmospheric ambient piece with floating synths and minimal percussion.",
+      "confidence": "high"
+    },
+    "QMFMF2447055": {
+      "languages": [
+        "spanish"
+      ],
+      "moods": [
+        "energetic",
+        "defiant",
+        "groovy"
+      ],
+      "energy": 4,
+      "themes": [
+        "urban life",
+        "rebellion"
+      ],
+      "description": "Aggressive dembow-infused reggaeton track with urban swagger and defiant energy.",
+      "confidence": "high"
+    },
+    "USIR20000392": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "groovy",
+        "confident",
+        "uplifting"
+      ],
+      "energy": 4,
+      "themes": [
+        "reggae",
+        "joy"
+      ],
+      "description": "Upbeat roots reggae with infectious rhythm and positive vibes.",
+      "confidence": "high"
+    },
+    "GBN9Y1100032": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "mysterious",
+        "tender",
+        "reflective"
+      ],
+      "energy": 1,
+      "themes": [],
+      "description": "Slow, atmospheric progressive rock piece with eerie synths and minimal percussion.",
+      "confidence": "high"
+    },
+    "USIR19915071": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "defiant",
+        "angry",
+        "confident"
+      ],
+      "energy": 4,
+      "themes": [
+        "rap career",
+        "legacy"
+      ],
+      "description": "Gangsta rap track with defiant lyrics about overcoming struggles and celebrating success.",
+      "confidence": "high"
+    },
+    "FRZ036001400": {
+      "languages": [
+        "french"
+      ],
+      "moods": [
+        "romantic",
+        "sensual",
+        "tender"
+      ],
+      "energy": 4,
+      "themes": [
+        "love",
+        "nostalgia"
+      ],
+      "description": "Smooth, jazzy French ballad with intimate vocals and warm romanticism.",
+      "confidence": "high"
+    },
+    "GBBBM9200027": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "tender",
+        "romantic",
+        "sensual"
+      ],
+      "energy": 2,
+      "themes": [
+        "spiritual love",
+        "rebirth"
+      ],
+      "description": "Soulful, jazz-infused ballad about transformative love and affection.",
+      "confidence": "high"
+    },
+    "USSM19906471": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "melancholic",
+        "reflective",
+        "nostalgic"
+      ],
+      "energy": 3,
+      "themes": [
+        "heartbreak",
+        "personal reflection"
+      ],
+      "description": "Acoustic folk-rock ballad about pain and introspection with poetic lyrics.",
+      "confidence": "high"
+    },
+    "GBUM72503087": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "playful",
+        "romantic",
+        "tender"
+      ],
+      "energy": 3,
+      "themes": [
+        "love",
+        "bossa nova"
+      ],
+      "description": "Smooth bossa nova-infused pop track with gentle vocals and romantic charm.",
+      "confidence": "high"
+    },
+    "FR0U91900069": {
+      "languages": [
+        "french"
+      ],
+      "moods": [
+        "energetic",
+        "defiant",
+        "groovy"
+      ],
+      "energy": 4,
+      "themes": [
+        "street life",
+        "resilience"
+      ],
+      "description": "High-energy French rap track with driving beats and defiant attitude.",
+      "confidence": "high"
+    },
+    "USZPE1200169": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "playful",
+        "mysterious",
+        "defiant"
+      ],
+      "energy": 3,
+      "themes": [
+        "satire",
+        "social commentary"
+      ],
+      "description": "Witty, jazz-rock parody with humorous lyrics and experimental edge.",
+      "confidence": "high"
+    },
+    "GBN9Y1100060": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "tense",
+        "mysterious",
+        "epic"
+      ],
+      "energy": 3,
+      "themes": [],
+      "description": "Instrumental progressive rock track with dark, cinematic bass and eerie atmosphere.",
+      "confidence": "high"
+    },
+    "USSM16800379": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "melancholic",
+        "nostalgic",
+        "reflective"
+      ],
+      "energy": 2,
+      "themes": [
+        "lost love",
+        "aging"
+      ],
+      "description": "Soft folk-pop ballad with wistful lyrics about time and relationships.",
+      "confidence": "high"
+    },
+    "GBBKS9700094": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "aggressive",
+        "defiant"
+      ],
+      "energy": 5,
+      "themes": [
+        "rebellion",
+        "chaos"
+      ],
+      "description": "High-energy, aggressive big beat track with intense vocals and driving rhythm.",
+      "confidence": "high"
+    },
+    "USMO17600526": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "romantic",
+        "sensual",
+        "tender"
+      ],
+      "energy": 3,
+      "themes": [
+        "tribute",
+        "jazz legends"
+      ],
+      "description": "Jazz-funk soul track celebrating musical icons with warm, intimate vocals.",
+      "confidence": "high"
+    },
+    "USAT21300956": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "sensual",
+        "romantic",
+        "tender"
+      ],
+      "energy": 2,
+      "themes": [
+        "intimacy",
+        "pleasure"
+      ],
+      "description": "Slow, smooth soul ballad with deep vocals and seductive groove.",
+      "confidence": "high"
+    },
+    "USWWW0125599": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "groovy",
+        "uplifting"
+      ],
+      "energy": 4,
+      "themes": [
+        "dance",
+        "celebration"
+      ],
+      "description": "Upbeat disco track with infectious rhythm and joyful energy.",
+      "confidence": "high"
+    },
+    "USQX92201881": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "defiant"
+      ],
+      "energy": 5,
+      "themes": [
+        "celebration",
+        "euphoria"
+      ],
+      "description": "High-energy house track with defiant energy and a euphoric build-up.",
+      "confidence": "high"
+    },
+    "USPR37730022": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "sensual",
+        "romantic",
+        "tender"
+      ],
+      "energy": 2,
+      "themes": [
+        "intimacy",
+        "romantic love"
+      ],
+      "description": "Smooth, slow soul ballad with Barry White's deep vocals, radiating sensual romance and tender passion.",
+      "confidence": "high"
+    },
+    "FRZ037100380": {
+      "languages": [
+        "french"
+      ],
+      "moods": [
+        "melancholic",
+        "reflective"
+      ],
+      "energy": 2,
+      "themes": [
+        "nostalgia",
+        "romantic longing"
+      ],
+      "description": "Slow, lounge-infused French ballad with electronic touches, evoking wistful nostalgia.",
+      "confidence": "high"
+    },
+    "NLHD81100014": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "uplifting",
+        "energetic"
+      ],
+      "energy": 5,
+      "themes": [],
+      "description": "Driving techno with a powerful, anthemic build, designed for peak-time dance floors.",
+      "confidence": "high"
+    },
+    "GBJX31975001": {
+      "languages": [
+        "korean",
+        "english"
+      ],
+      "moods": [
+        "joyful",
+        "groovy"
+      ],
+      "energy": 4,
+      "themes": [
+        "celebration",
+        "dance"
+      ],
+      "description": "Upbeat house track with infectious grooves and a euphoric, feel-good vibe.",
+      "confidence": "high"
+    },
+    "FR9W11504749": {
+      "languages": [
+        "french"
+      ],
+      "moods": [
+        "defiant",
+        "angry"
+      ],
+      "energy": 5,
+      "themes": [
+        "social commentary",
+        "struggle"
+      ],
+      "description": "High-energy French rap with rapid-fire delivery and intense lyrical content.",
+      "confidence": "high"
+    },
+    "GBUM71805233": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "melancholic",
+        "dreamy"
+      ],
+      "energy": 2,
+      "themes": [
+        "heartbreak",
+        "longing"
+      ],
+      "description": "Hypnotic trip-hop ballad with ethereal vocals and a haunting, atmospheric sound.",
+      "confidence": "high"
+    },
+    "AUUM71500303": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "sensual",
+        "playful"
+      ],
+      "energy": 4,
+      "themes": [
+        "love triangle",
+        "disco"
+      ],
+      "description": "Groovy psychedelic pop with sensual basslines and a funky, danceable rhythm.",
+      "confidence": "high"
+    },
+    "USUM72412581": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "energetic",
+        "euphoric"
+      ],
+      "energy": 5,
+      "themes": [
+        "theatricality",
+        "electronic dance"
+      ],
+      "description": "Pulsing electro-house anthem with dramatic vocals and a dark, hypnotic edge.",
+      "confidence": "high"
+    },
+    "USPO10001089": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "playful",
+        "confident"
+      ],
+      "energy": 4,
+      "themes": [
+        "party",
+        "swagger"
+      ],
+      "description": "Smooth G-funk track with laid-back grooves and playful, confident lyrics.",
+      "confidence": "high"
+    },
+    "USSM11915307": {
+      "languages": [
+        "english"
+      ],
+      "moods": [
+        "aggressive",
+        "tense"
+      ],
+      "energy": 5,
+      "themes": [
+        "street life",
+        "power"
+      ],
+      "description": "Hard-hitting trap anthem with deep bass and intense, confrontational energy.",
+      "confidence": "high"
+    },
+    "GBAAA0400426": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "calm",
+        "dreamy"
+      ],
+      "energy": 1,
+      "themes": [],
+      "description": "Ultra-minimal ambient piece with near-silence, creating a vast, floating soundscape.",
+      "confidence": "high"
+    },
+    "GBUM71900378": {
+      "languages": [
+        "instrumental"
+      ],
+      "moods": [
+        "calm",
+        "reflective"
+      ],
+      "energy": 1,
+      "themes": [],
+      "description": "Slow, melodic ambient track with a gentle, ascending motif, evoking cosmic vastness.",
+      "confidence": "high"
+    }
+  }
+}

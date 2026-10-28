@@ -39,17 +39,30 @@ export async function* paginate(firstUrl: string): AsyncGenerator<Page> {
 
 };
 
-async function send<T>(url: string): Promise<T> {
+export type RequestOptions = {
+	method?: "GET" | "POST" | "PATCH" | "DELETE";
+	body?: unknown;
+	idempotencyKey?: string;
+};
+
+async function send<T>(url: string, options: RequestOptions): Promise<T> {
 
 	for (let attempt = 0; ; attempt++) {
 
 		const accessToken = await getAccessToken();
 
+		const headers: Record<string, string> = {
+			"Authorization": `Bearer ${accessToken}`,
+			"Accept": "application/vnd.api+json"
+		};
+
+		if (options.body !== undefined) headers["Content-Type"] = "application/vnd.api+json";
+		if (options.idempotencyKey) headers["Idempotency-Key"] = options.idempotencyKey;
+
 		const res = await fetch(url, {
-			headers: {
-				"Authorization": `Bearer ${accessToken}`,
-				"Accept": "application/vnd.api+json"
-			}
+			method: options.method ?? "GET",
+			headers,
+			body: options.body !== undefined ? JSON.stringify(options.body) : undefined
 		});
 
 		if (res.status == 429 && attempt < MAX_RETRIES) {
@@ -65,6 +78,8 @@ async function send<T>(url: string): Promise<T> {
 			throw new Error(`Tidal request failed (${res.status}) for ${url}: ${error}`);
 		};
 
+		if (res.status === 204) return undefined as T;
+
 		const data = await res.json();
 		return data as T;
 
@@ -72,6 +87,6 @@ async function send<T>(url: string): Promise<T> {
 
 };
 
-export async function request<T>(endpoint: string): Promise<T> {
-	return queue.add(() => send<T>(resolveUrl(endpoint)));
+export async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+	return queue.add(() => send<T>(resolveUrl(endpoint), options));
 };

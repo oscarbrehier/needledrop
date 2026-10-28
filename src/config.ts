@@ -7,13 +7,14 @@ const Env = z.object({
 	TIDAL_CLIENT_SECRET: z.string().optional(),
 	LASTFM_API_KEY: z.string().optional(),
 	LLM_API_KEY: z.string().optional(),
+	MISTRAL_API_KEY: z.string().optional()
 });
 
 const env = Env.parse(process.env);
 
 export const databasePath = env.DATABASE_PATH;
 
-export function requireEnv(key: "TIDAL_CLIENT_ID" | "LASTFM_API_KEY"): string {
+export function requireEnv(key: "TIDAL_CLIENT_ID" | "LASTFM_API_KEY" | "MISTRAL_API_KEY"): string {
 	const value = env[key];
 	if (!value) throw new Error(`${key} is missing, add it to .env`);
 	return value;
