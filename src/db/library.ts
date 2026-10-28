@@ -3,6 +3,7 @@ import { getDatabase } from "./client.js";
 export type PlaylistRow = {
 	tidalId: string;
 	name: string;
+	lastModifiedAt: string | null;
 };
 
 export type TrackRow = {
@@ -26,11 +27,42 @@ export function upsertPlaylist(playlist: PlaylistRow): void {
 
 	db
 		.prepare(`
-			INSERT INTO playlists (tidal_id, name)
-			VALUES (@tidalId, @name)
-			ON CONFLICT (tidal_id) DO UPDATE SET name = excluded.name
+			INSERT INTO playlists (tidal_id, name, last_modified_at)
+			VALUES (@tidalId, @name, @lastModifiedAt)
+			ON CONFLICT (tidal_id) DO UPDATE SET
+				name              = excluded.name,
+				last_modified_at  = excluded.last_modified_at
 		`)
 		.run(playlist);
+
+};
+
+export type SyncedPlaylist = { tidalId: string; name: string; lastModifiedAt: string | null };
+
+// What a previous sync already has, so a new sync can tell which playlists
+// changed, which disappeared from the collection, and skip re-fetching the rest.
+export function listSyncedPlaylists(): Map<string, SyncedPlaylist> {
+
+	const rows = getDatabase()
+		.prepare("SELECT tidal_id AS tidalId, name, last_modified_at AS lastModifiedAt FROM playlists")
+		.all() as SyncedPlaylist[];
+
+	return new Map(rows.map((row) => [row.tidalId, row]));
+
+};
+
+// The tracks an unchanged playlist already has, so the sync summary can still
+// report accurate counts without re-fetching anything from Tidal.
+export function getPlaylistTracks(playlistId: string): { trackId: string; isrc: string | null }[] {
+
+	return getDatabase()
+		.prepare(`
+			SELECT pt.track_id AS trackId, t.isrc
+			FROM playlist_tracks pt
+			JOIN tracks t ON t.tidal_id = pt.track_id
+			WHERE pt.playlist_id = ?
+		`)
+		.all(playlistId) as { trackId: string; isrc: string | null }[];
 
 };
 

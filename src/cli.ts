@@ -68,12 +68,18 @@ program
 	.command("sync")
 	.description("Copy your Tidal playlists and their tracks into the local database")
 	.option("--playlist <name>", "Sync only the playlist with this name")
-	.action(async (opts: { playlist?: string }) => {
+	.option("--full", "Re-fetch every playlist's tracks, even ones that look unchanged")
+	.action(async (opts: { playlist?: string; full?: boolean }) => {
 		const summary = await syncLibrary(opts);
 		console.log(
-			`Synced ${summary.playlists} playlists, ${summary.tracks} tracks, ` +
+			`Synced ${summary.playlists} playlists (${summary.unchanged} unchanged), ${summary.tracks} tracks, ` +
 			`${summary.uniqueIsrcs} unique ISRCs, ${summary.skipped} skipped`
 		);
+		if (summary.missing.length) {
+			console.log(
+				`No longer in your Tidal collection (kept in the database): ${summary.missing.join(", ")}`
+			);
+		};
 	});
 
 program
