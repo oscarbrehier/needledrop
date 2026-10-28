@@ -22,6 +22,7 @@ import { buildPlaylist } from "./search/builder.js";
 import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
 import { exportOverrides, getOverride, importOverrides, saveOverride } from "./db/tagOverrides.js";
 import { TagOverrideInput } from "./tag/schema.js";
+import { startServer } from "./server/app.js";
 
 async function confirm(message: string): Promise<boolean> {
 	const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -297,6 +298,14 @@ program
 
 		console.log(`Saved "${name}" to Tidal (${tidalId}), ${trackIds.length} tracks.`);
 
+	});
+
+program
+	.command("serve")
+	.description("Start the local web UI server")
+	.option("--port <n>", "Port to listen on", "8790")
+	.action((opts: { port: string }) => {
+		startServer(Number.parseInt(opts.port, 10));
 	});
 
 try {
