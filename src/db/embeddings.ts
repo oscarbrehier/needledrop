@@ -7,14 +7,38 @@ export function selectTaggedRecordings(): RecordingToEmbed[] {
 
 	const rows = getDatabase()
 		.prepare(`
-			SELECT tg.isrc, t.title, tg.payload
+			SELECT
+				tg.isrc, t.title, tg.payload,
+				ov.languages AS overrideLanguages, ov.moods AS overrideMoods, ov.energy AS overrideEnergy
 			FROM tags tg
 			JOIN tracks t ON t.isrc = tg.isrc
+			LEFT JOIN tag_overrides ov ON ov.isrc = tg.isrc
 			GROUP BY tg.isrc
 		`)
-		.all() as { isrc: string; title: string; payload: string }[];
+		.all() as {
+			isrc: string; title: string; payload: string;
+			overrideLanguages: string | null; overrideMoods: string | null; overrideEnergy: number | null;
+		}[];
 
-	return rows.map((row) => ({ isrc: row.isrc, title: row.title, tags: JSON.parse(row.payload) as Tags }));
+	// The embedding text is built from the resolved tags, so a manual override
+	// (see db/tagOverrides.ts) shifts what gets embedded the same way it shifts
+	// what search sees.
+	return rows.map((row) => {
+
+		const tags = JSON.parse(row.payload) as Tags;
+
+		return {
+			isrc: row.isrc,
+			title: row.title,
+			tags: {
+				...tags,
+				languages: row.overrideLanguages ? JSON.parse(row.overrideLanguages) : tags.languages,
+				moods: row.overrideMoods ? JSON.parse(row.overrideMoods) : tags.moods,
+				energy: row.overrideEnergy ?? tags.energy,
+			},
+		};
+
+	});
 
 };
 
