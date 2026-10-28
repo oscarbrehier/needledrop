@@ -1,4 +1,4 @@
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Minus, Plus } from "lucide-react";
 import { MAX_TRACKS, MIN_TRACKS } from "./page";
 
 const SUGGESTIONS = [
@@ -17,7 +17,7 @@ type PromptPanelProps = {
 	onIncrease: () => void;
 	canSubmit: boolean;
 	onSubmit: () => void;
-}
+};
 
 export function PromptPanel({
 	prompt,
@@ -31,11 +31,11 @@ export function PromptPanel({
 
 	return (
 
-		<div className="mt-60 w-full flex flex-col items-center space-y-10">
+		<div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 pt-12 pb-30">
 
-			<div className="text-center space-y-2">
-				<p className="text-6xl font-display font-semibold tracking-tight">What should we play?</p>
-				<p className="text-muted">Drawn from your X recordings.</p>
+			<div className="flex animate-fade-up flex-col items-center gap-2.5 text-center">
+				<h1 className="font-display text-title-1 md:text-display">What should we play?</h1>
+				<p className="text-[15px] tabular-nums text-muted">Drawn from your X recordings.</p>
 			</div>
 
 			<form
@@ -43,44 +43,46 @@ export function PromptPanel({
 					e.preventDefault();
 					onSubmit();
 				}}
-				className="w-full max-w-3xl bg-surface-raised rounded-lg px-6 py-4 space-y-12 flex flex-col justify-between border border-subtle"
+				className="flex w-full max-w-[680px] animate-fade-up flex-col gap-4 rounded-lg border border-subtle bg-surface-raised pt-[18px] pr-3.5 pb-3 pl-5 transition-colors duration-150 [animation-delay:40ms] focus-within:border-emphasis"
 			>
 
+				<label htmlFor="playlist-prompt" className="sr-only">Describe the playlist you want</label>
+
 				<input
+					id="playlist-prompt"
 					type="text"
-					placeholder="Laboris consequat laborum ea commodo."
-					className="font-display text-xl placeholder:text-muted mt-2 outline-none border-none"
+					placeholder="mellow French songs for a rainy Sunday"
 					value={prompt}
 					onChange={(e) => onPromptChange(e.target.value)}
+					className="w-full border-0 bg-transparent p-0 font-display text-prompt text-primary outline-none focus-visible:outline-none"
 				/>
 
-				<div className="w-full flex items-end justify-between">
+				<div className="flex items-center justify-between gap-3">
 
-					<div className="flex h-10 items-center space-x-2 rounded-md border border-subtle">
+					<div role="group" aria-label="Playlist size" className="flex h-[34px] items-center rounded-md border border-subtle">
 
 						<button
 							type="button"
 							aria-label="Fewer tracks"
 							onClick={onDecrease}
 							disabled={maxTracks <= MIN_TRACKS}
-							className="disabled:opacity-30 size-10 rounded-md transition-colors text-muted hover:text-primary hover:bg-surface-overlay"
+							className="grid size-8 place-items-center rounded-[9px] text-secondary transition-colors duration-150 enabled:hover:bg-surface-overlay enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
 						>
-							-
+							<Minus size={12} strokeWidth={2.2} aria-hidden="true" />
 						</button>
 
-						<p className="text-muted text-sm" aria-live="polite">
-							<span className="font-semibold text-primary tabular-nums">{maxTracks}</span>{" "}
-							tracks
-						</p>
+						<span aria-live="polite" className="min-w-[70px] text-center text-small font-semibold tabular-nums">
+							{maxTracks} <span className="font-normal text-muted">tracks</span>
+						</span>
 
 						<button
 							type="button"
 							aria-label="More tracks"
 							onClick={onIncrease}
 							disabled={maxTracks >= MAX_TRACKS}
-							className="disabled:opacity-30 size-10 rounded-md transition-colors text-muted hover:text-primary hover:bg-surface-overlay"
+							className="grid size-8 place-items-center rounded-[9px] text-secondary transition-colors duration-150 enabled:hover:bg-surface-overlay enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
 						>
-							+
+							<Plus size={12} strokeWidth={2.2} aria-hidden="true" />
 						</button>
 
 					</div>
@@ -89,25 +91,26 @@ export function PromptPanel({
 						type="submit"
 						aria-label="Generate playlist"
 						disabled={!canSubmit}
-						className="flex size-10 items-center justify-center rounded-md bg-inverse transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+						className="grid size-9 place-items-center rounded-md bg-inverse text-on-inverse transition-colors duration-150 enabled:hover:bg-inverse-hover disabled:cursor-not-allowed disabled:opacity-40"
 					>
-						<ArrowUp className="text-on-inverse" size={18} strokeWidth={2} aria-hidden="true" />
+						<ArrowUp size={16} strokeWidth={2.2} aria-hidden="true" />
 					</button>
 
 				</div>
 
 			</form>
 
-			<div className="w-full max-w-4xl flex flex-wrap justify-center gap-3">
+			<div className="flex max-w-[700px] animate-fade-up flex-wrap justify-center gap-2 [animation-delay:80ms]">
 
-				{SUGGESTIONS.slice(0, 5).map((v) => (
+				{SUGGESTIONS.map((suggestion) => (
 
 					<button
-						key={v}
-						className="py-2 px-4 rounded-full border border-subtle transition-colors text-secondary text-sm hover:bg-subtle hover:text-primary"
-						onClick={() => onPromptChange(v)}
+						key={suggestion}
+						type="button"
+						onClick={() => onPromptChange(suggestion)}
+						className="h-[34px] rounded-full border border-subtle px-3.5 text-small font-medium text-secondary transition-colors duration-150 hover:bg-surface-overlay hover:text-primary"
 					>
-						{v}
+						{suggestion}
 					</button>
 
 				))}

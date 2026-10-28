@@ -1,4 +1,3 @@
-import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PromptPanel } from "./PromptPanel";
 import { GeneratingPanel } from "./GeneratingPanel";
@@ -24,13 +23,12 @@ export default function PlaylistPage() {
 	const [phase, setPhase] = useState<Phase>({ status: "idle" });
 	const [prompt, setPrompt] = useState<string>("");
 	const [options, setOptions] = useState<GenerationOptions>({
-		maxTracks: 25
+		maxTracks: 25,
 	});
 
 	const controllerRef = useRef<AbortController | null>(null);
 
 	useEffect(() => () => controllerRef.current?.abort(), []);
-
 
 	const canSubmit = prompt.trim() !== "";
 
@@ -81,32 +79,46 @@ export default function PlaylistPage() {
 	function renderPhase() {
 
 		switch (phase.status) {
+
 			case "idle":
-				return <PromptPanel
-					prompt={prompt}
-					onPromptChange={setPrompt}
-					maxTracks={options.maxTracks}
-					onDecrease={decreaseMaxTracks}
-					onIncrease={increaseMaxTracks}
-					canSubmit={canSubmit}
-					onSubmit={generate}
-				/>
+
+				return (
+
+					<PromptPanel
+						prompt={prompt}
+						onPromptChange={setPrompt}
+						maxTracks={options.maxTracks}
+						onDecrease={decreaseMaxTracks}
+						onIncrease={increaseMaxTracks}
+						canSubmit={canSubmit}
+						onSubmit={generate}
+					/>
+
+				);
+
 			case "active":
-				return <GeneratingPanel
-					request={phase.request}
-					progress={phase.progress}
-					onStop={stop}
-					onRegenerate={() => run(phase.request)}
-				/>
+
+				return (
+
+					<GeneratingPanel
+						request={phase.request}
+						progress={phase.progress}
+						onStop={stop}
+						onRegenerate={() => run(phase.request)}
+					/>
+
+				);
+
 			default:
 				return null;
+
 		};
 
 	};
 
 	return (
 
-		<div className="flex-1 w-full flex flex-col items-center">
+		<div className="flex w-full flex-1 flex-col items-center">
 			{renderPhase()}
 		</div>
 

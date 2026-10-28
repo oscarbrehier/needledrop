@@ -11,22 +11,6 @@ export default function Layout() {
 
 		<div className="min-h-screen flex flex-col bg-surface text-white-900">
 
-			{/* <header className="border-b bg-surface">
-
-				<div className="mx-auto flex max-w-6xl items-center gap-8 px-6 py-4">
-					<span className="text-lg font-semibold tracking-tight">needledrop</span>
-					<nav className="flex gap-6 text-sm font-medium">
-						<NavLink to="/" end className={navClass}>
-							Library
-						</NavLink>
-						<NavLink to="/playlist" className={navClass}>
-							Playlist
-						</NavLink>
-					</nav>
-				</div>
-
-			</header> */}
-
 			<header className="px-6 h-16 w-full flex items-center justify-between">
 
 				<div>
@@ -38,18 +22,18 @@ export default function Layout() {
 					<nav className="flex gap-2">
 
 						<NavLink
+							to="/playlist"
+							className={navClass}
+						>
+							Playlist
+						</NavLink>
+
+						<NavLink
 							to="/"
 							end
 							className={navClass}
 						>
 							Library
-						</NavLink>
-
-						<NavLink
-							to="/playlist"
-							className={navClass}
-						>
-							Playlist
 						</NavLink>
 
 					</nav>
