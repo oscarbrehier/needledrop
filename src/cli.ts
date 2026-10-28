@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import process from "node:process";
 import { createInterface } from "node:readline/promises";
 import { migrate } from "./db/migrate.js";
@@ -20,7 +20,7 @@ import { parsePrompt } from "./search/parse.js";
 import { searchCandidates } from "./search/query.js";
 import { buildPlaylist } from "./search/builder.js";
 import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
-import { getOverride, saveOverride } from "./db/tagOverrides.js";
+import { exportOverrides, getOverride, importOverrides, saveOverride } from "./db/tagOverrides.js";
 import { TagOverrideInput } from "./tag/schema.js";
 
 async function confirm(message: string): Promise<boolean> {
@@ -163,14 +163,32 @@ program
 
 program
 	.command("override")
-	.argument("<isrc>", "ISRC of the recording to correct")
+	.argument("[isrc]", "ISRC of the recording to correct")
 	.description("Record a manual correction on top of the model's tags (search applies it, tag/--retag never writes it)")
 	.option("--languages <list>", "Comma-separated languages, e.g. english,french")
 	.option("--moods <list>", "Comma-separated moods from the fixed list")
 	.option("--energy <n>", "Energy from 1 to 5")
 	.option("--note <text>", "Why you're overriding this")
-	.action((isrc: string, opts: { languages?: string; moods?: string; energy?: string; note?: string }) => {
+	.addOption(new Option("--export [path]", "Write all overrides to a tracked CSV instead of setting one").preset("overrides.csv"))
+	.addOption(new Option("--import [path]", "Restore overrides from a CSV written by --export").preset("overrides.csv"))
+	.action((isrc: string | undefined, opts: {
+		languages?: string; moods?: string; energy?: string; note?: string;
+		export?: string; import?: string;
+	}) => {
 
+		if (opts.export) {
+			const count = exportOverrides(opts.export);
+			console.log(`Wrote ${count} overrides to ${opts.export}`);
+			return;
+		};
+
+		if (opts.import) {
+			const count = importOverrides(opts.import);
+			console.log(`Imported ${count} overrides from ${opts.import}`);
+			return;
+		};
+
+		if (!isrc) throw new Error("Pass an ISRC, or --export / --import.");
 		if (!opts.languages && !opts.moods && !opts.energy) {
 			throw new Error("Pass at least one of --languages, --moods or --energy.");
 		};
