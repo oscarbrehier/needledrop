@@ -1,6 +1,7 @@
 import z from "zod";
 import { TrackTags } from "../tag/schema.js";
 import { getDatabase } from "./client.js";
+import { LibraryStats } from "../server/contract.js";
 
 type Tags = z.infer<typeof TrackTags>;
 
@@ -74,5 +75,21 @@ function toRecordingRow(row: RawRow): RecordingRow {
 	};
 
 	return { ...base, tags, overridden };
+
+};
+
+export function libraryStats(): LibraryStats {
+
+	const stats = getDatabase()
+		.prepare(`
+			SELECT
+				(SELECT COUNT(DISTINCT isrc) FROM tracks WHERE isrc IS NOT NULL)                AS total,
+				(SELECT COUNT(*) FROM tags)                                                     AS tagged,
+				(SELECT COUNT(*) FROM embeddings)                                        AS embedded,
+				(SELECT COUNT(*) FROM tags WHERE json_extract(payload, '$.confidence') = 'low') AS lowConfidence
+			`)
+			.get();
+
+	return LibraryStats.parse(stats);
 
 };

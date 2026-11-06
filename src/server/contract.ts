@@ -17,15 +17,6 @@ export const ParseRequest = z.object({
 	size: z.number().int().min(1).max(100).default(25)
 });
 
-export const ParsedFilters = z.object({
-	languages: z.array(z.string()).optional(),
-	energyMin: Energy.optional(),
-	energyMax: Energy.optional(),
-	moods: z.object(z.enum(MOOD_NAMES)).optional(),
-	semantic: z.string(),
-	size: z.number().int().min(1).max(100)
-});
-
 export const TrackResult = z.object({
 	isrc: z.string(),
 	tidalId: z.string(),
@@ -84,7 +75,6 @@ export const ErrorResponse = z.object({
 
 export type LibraryStats = z.infer<typeof LibraryStats>;
 export type ParseRequest = z.infer<typeof ParseRequest>;
-export type ParsedFilters = z.infer<typeof ParsedFilters>;
 export type TrackResult = z.infer<typeof TrackResult>;
 export type FunnelStats = z.infer<typeof FunnelStats>;
 export type PreviewResponse = z.infer<typeof PreviewResponse>;
