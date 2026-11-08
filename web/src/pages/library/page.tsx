@@ -10,11 +10,14 @@ type Tags = {
 	confidence: Confidence;
 };
 
+export type OverrideField = "languages" | "moods" | "energy";
+
 export type Recording = {
 	isrc: string;
 	title: string;
 	artist: string | null;
 	tags: Tags | null;
+	overridden: OverrideField[];
 };
 
 export type TagStatus = "all" | "tagged" | "untagged";

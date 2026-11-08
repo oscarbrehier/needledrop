@@ -4,7 +4,9 @@ import { serve } from "@hono/node-server";
 import { HttpError, readBody } from "./errors.js";
 import { ZodError } from "zod";
 import { ParseRequest } from "./contract.js";
-import { parsePrompt } from "../search/parse.js";
+import { ParsedPrompt, parsePrompt } from "../search/parse.js";
+import { buildPreview } from "./preview.js";
+import { embed } from "../embed/embedder.js";
 
 export const app = new Hono();
 
@@ -20,6 +22,11 @@ app.post("/api/playlists/parse", async (c) => {
 		size: body.size
 	});
 
+});
+
+app.post("/api/playlists/preview", async (c) => {
+	const filters = await readBody(c, ParsedPrompt);
+	return c.json(await buildPreview(filters));
 });
 
 app.onError((err, c) => {
@@ -42,6 +49,12 @@ app.notFound((c) => {
 });
 
 export function startServer(port: number): void {
+
 	serve({ fetch: app.fetch, port });
 	console.log(`API running on http://localhost:${port}`);
+
+	embed(["warm up"])
+		.then(() => console.log("Embedding model ready"))
+		.catch((e) => console.error("Embedding warm-up failed:", e));1
+
 };

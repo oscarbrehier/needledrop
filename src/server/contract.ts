@@ -38,16 +38,8 @@ export const FunnelStats = z.object({
 		label: z.string(),
 		count: z.number().int()
 	})),
-	relaxed: z.array(z.object({
-		filter: z.string(),
-		from: z.number(),
-		to: z.number()
-	})),
-	dropped: z.object({
-		duplicates: z.number().int(),
-		artistCap: z.number().int(),
-		lowConfidence: z.number().int()
-	}),
+	relaxed: z.array(z.string()),
+	dropped: z.number().int().nullable(),
 	selected: z.number().int(),
 	requested: z.number().int()
 });

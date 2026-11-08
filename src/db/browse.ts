@@ -1,7 +1,9 @@
 import z from "zod";
 import { TrackTags } from "../tag/schema.js";
 import { getDatabase } from "./client.js";
-import { LibraryStats } from "../server/contract.js";
+import { LibraryStats, TrackResult } from "../server/contract.js";
+import { ResultRow } from "../search/builder.js";
+import { Mood } from "../tag/moods.js";
 
 type Tags = z.infer<typeof TrackTags>;
 
@@ -23,7 +25,14 @@ type RawRow = {
 	overrideLanguages: string | null;
 	overrideMoods: string | null;
 	overrideEnergy: number | null;
-}
+};
+
+export type TrackDetails = {
+	tidalId: string;
+	languages: string;
+	description: string;
+	durationS: number | null;
+};
 
 export function listRecordings(): RecordingRow[] {
 
@@ -88,8 +97,63 @@ export function libraryStats(): LibraryStats {
 				(SELECT COUNT(*) FROM embeddings)                                        AS embedded,
 				(SELECT COUNT(*) FROM tags WHERE json_extract(payload, '$.confidence') = 'low') AS lowConfidence
 			`)
-			.get();
+		.get();
 
 	return LibraryStats.parse(stats);
+
+};
+
+export function trackDetails(isrcs: string[]): Map<string, TrackDetails> {
+
+	if (isrcs.length === 0) return new Map();
+
+	const rows = getDatabase()
+		.prepare(`
+			SELECT
+				t.isrc,
+				MIN(t.tidal_id)   AS tidalId,
+				MIN(t.duration_s) AS durationS,
+				json_extract(g.payload, '$.description') AS description,
+				COALESCE(o.languages, json_extract(g.payload, '$.languages')) AS languagesJson
+			FROM tracks t
+			JOIN tags g               ON g.isrc = t.isrc
+			LEFT JOIN tag_overrides o ON o.isrc = t.isrc
+			WHERE t.isrc IN (${isrcs.map(() => "?").join(",")})
+			GROUP BY t.isrc
+		`)
+		.all(...isrcs) as { isrc: string; tidalId: string; durationS: number | null; description: string; languagesJson: string; }[];
+
+	return new Map(rows.map((r) => [r.isrc, {
+		tidalId: r.tidalId,
+		durationS: r.durationS,
+		description: r.description,
+		languages: JSON.parse(r.languagesJson)
+	}]));
+
+};
+
+export function toTrackResult(rows: ResultRow[], details: Map<string, TrackDetails>): TrackResult[] {
+
+	return rows.map((r) => {
+
+		const d = details.get(r.isrc);
+		if (!d) throw new Error(`No details found for ${r.isrc}`);
+
+		return {
+			isrc: r.isrc,
+			tidalId: d.tidalId,
+			title: r.title,
+			artist: r.artist,
+			moods: r.moods as Mood[],
+			energy: r.energy,
+			languages: d.languages,
+			description: d.description,
+			confidence: r.confidence,
+			distance: r.distance,
+			score: r.score,
+			durationS: d.durationS,
+		};
+
+	});
 
 };
