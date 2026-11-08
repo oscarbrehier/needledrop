@@ -13,13 +13,12 @@ import { buildTrackInput } from "./tag/input.js";
 import { buildMessages } from "./tag/prompt.js";
 import { runTagging, selectCandidates } from "./tag/run.js";
 import { findNearest } from "./db/embeddings.js";
-import { resolveIsrc, resolveTidalId } from "./db/library.js";
-import { saveGeneratedPlaylist } from "./db/playlists.js";
+import { resolveIsrc } from "./db/library.js";
 import { embedAll } from "./embed/run.js";
 import { parsePrompt } from "./search/parse.js";
 import { searchCandidates } from "./search/query.js";
 import { buildPlaylist } from "./search/builder.js";
-import { addItems, buildPlaylistDescription, createPlaylist, defaultPlaylistName } from "./tidal/playlists.js";
+import { savePlaylist } from "./playlist/save.js";
 import { exportOverrides, getOverride, importOverrides, saveOverride } from "./db/tagOverrides.js";
 import { TagOverrideInput } from "./tag/schema.js";
 
@@ -277,25 +276,14 @@ program
 
 		if (!opts.save) return;
 
-		const trackIds = rows
-			.map((row) => resolveTidalId(row.isrc))
-			.filter((id): id is string => id !== null);
-
-		if (trackIds.length === 0) throw new Error("Nothing to save: none of the matched tracks resolved to a Tidal id.");
-
-		const name = opts.name ?? defaultPlaylistName(prompt);
-		const tidalId = await createPlaylist(name, buildPlaylistDescription(prompt));
-
-		await addItems(tidalId, trackIds);
-
-		saveGeneratedPlaylist({
-			tidalId,
+		const { tidalId, name, trackCount } = await savePlaylist({
+			name: opts.name,
 			prompt,
 			filters: parsed,
-			trackIds: rows.map((row) => row.isrc),
+			isrcs: rows.map((row) => row.isrc),
 		});
 
-		console.log(`Saved "${name}" to Tidal (${tidalId}), ${trackIds.length} tracks.`);
+		console.log(`Saved "${name}" to Tidal (${tidalId}), ${trackCount} tracks.`);
 
 	});
 
