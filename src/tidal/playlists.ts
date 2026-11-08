@@ -41,15 +41,34 @@ function chunk<T>(items: T[], size: number): T[][] {
 	return out;
 };
 
+// Thrown when a batch fails partway through, so callers can tell how many
+// tracks already made it into the playlist (every batch before the failed one).
+export class AddItemsError extends Error {
+
+	constructor(readonly added: number, readonly total: number, cause: unknown) {
+		super(`Added ${added} of ${total} tracks before Tidal failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
+		this.name = "AddItemsError";
+	};
+
+};
+
 export async function addItems(playlistId: string, trackIds: string[]): Promise<void> {
+
+	let added = 0;
 
 	for (const batch of chunk(trackIds, MAX_ITEMS_PER_REQUEST)) {
 
-		await request(`/playlists/${playlistId}/relationships/items`, {
-			method: "POST",
-			idempotencyKey: randomUUID(),
-			body: { data: batch.map((id) => ({ id, type: "tracks" })) }
-		});
+		try {
+			await request(`/playlists/${playlistId}/relationships/items`, {
+				method: "POST",
+				idempotencyKey: randomUUID(),
+				body: { data: batch.map((id) => ({ id, type: "tracks" })) }
+			});
+		} catch (err) {
+			throw new AddItemsError(added, trackIds.length, err);
+		};
+
+		added += batch.length;
 
 	};
 
