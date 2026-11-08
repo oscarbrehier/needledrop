@@ -1,4 +1,7 @@
-import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import { modelCacheDir } from "../config.js";
+
+env.cacheDir = modelCacheDir;
 
 const MODEL = "Xenova/bge-m3";
 export const DIMENSIONS = 1024;

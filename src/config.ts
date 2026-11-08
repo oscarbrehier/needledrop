@@ -3,6 +3,7 @@ import z from "zod";
 
 const Env = z.object({
 	DATABASE_PATH: z.string().min(1).default("data/needledrop.db"),
+	MODEL_CACHE_DIR: z.string().min(1).default("data/models"),
 	TIDAL_CLIENT_ID: z.string().optional(),
 	TIDAL_CLIENT_SECRET: z.string().optional(),
 	LASTFM_API_KEY: z.string().optional(),
@@ -13,6 +14,7 @@ const Env = z.object({
 const env = Env.parse(process.env);
 
 export const databasePath = env.DATABASE_PATH;
+export const modelCacheDir = env.MODEL_CACHE_DIR;
 
 export function requireEnv(key: "TIDAL_CLIENT_ID" | "LASTFM_API_KEY" | "MISTRAL_API_KEY"): string {
 	const value = env[key];
