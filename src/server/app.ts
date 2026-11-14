@@ -3,10 +3,11 @@ import { libraryStats, listRecordings } from "../db/browse.js";
 import { serve } from "@hono/node-server";
 import { HttpError, readBody } from "./errors.js";
 import { ZodError } from "zod";
-import { ParseRequest } from "./contract.js";
+import { ParseRequest, SaveRequest } from "./contract.js";
 import { ParsedPrompt, parsePrompt } from "../search/parse.js";
 import { buildPreview } from "./preview.js";
 import { embed } from "../embed/embedder.js";
+import { savePlaylist } from "../playlist/save.js";
 
 export const app = new Hono();
 
@@ -27,6 +28,18 @@ app.post("/api/playlists/parse", async (c) => {
 app.post("/api/playlists/preview", async (c) => {
 	const filters = await readBody(c, ParsedPrompt);
 	return c.json(await buildPreview(filters));
+});
+
+app.post("/api/playlists", async (c) => {
+
+	const body = await readBody(c, SaveRequest);
+	const result = await savePlaylist(body);
+
+	return c.json({
+		...result,
+		url: `https://tidal.com/browse/playlist/${result.tidalId}`
+	});
+
 });
 
 app.onError((err, c) => {
@@ -55,6 +68,6 @@ export function startServer(port: number): void {
 
 	embed(["warm up"])
 		.then(() => console.log("Embedding model ready"))
-		.catch((e) => console.error("Embedding warm-up failed:", e));1
+		.catch((e) => console.error("Embedding warm-up failed:", e));
 
 };

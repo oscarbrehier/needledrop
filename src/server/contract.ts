@@ -1,5 +1,6 @@
 import z from "zod";
 import { MOODS, type Mood } from "../tag/moods.js";
+import { ParsedPrompt } from "../search/parse.js";
 
 const MOOD_NAMES = Object.keys(MOODS) as [Mood, ...Mood[]];
 const Confidence = z.enum(["low", "medium", "high"]);
@@ -22,7 +23,7 @@ export const TrackResult = z.object({
 	tidalId: z.string(),
 	title: z.string(),
 	artist: z.string().nullable(),
-	moods: z.array(z.enum(MOODS)),
+	moods: z.array(z.enum(MOOD_NAMES)),
 	energy: Energy,
 	languages: z.array(z.string()),
 	description: z.string(),
@@ -50,14 +51,17 @@ export const PreviewResponse = z.object({
 });
 
 export const SaveRequest = z.object({
-	name: z.string().trim().min(1).max(100),
-	prompt: z.string(),
-	trackIds: z.array(z.string()).min(1)
+	name: z.string().trim().min(1).max(100).optional(),
+	prompt: z.string().min(1),
+	filters: ParsedPrompt,
+	isrcs: z.array(z.string()).min(1)
 });
 
 export const SaveResponse = z.object({
-	playlistId: z.string(),
-	url: z.url()
+	tidalId: z.string(),
+	name: z.string(),
+	trackCount: z.number().int(),
+	url: z.url(),
 });
 
 export const ErrorResponse = z.object({

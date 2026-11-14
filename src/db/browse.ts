@@ -29,7 +29,7 @@ type RawRow = {
 
 export type TrackDetails = {
 	tidalId: string;
-	languages: string;
+	languages: string[];
 	description: string;
 	durationS: number | null;
 };
