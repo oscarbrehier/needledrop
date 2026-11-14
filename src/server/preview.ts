@@ -2,7 +2,7 @@ import { libraryStats, toTrackResult, trackDetails } from "../db/browse.js";
 import { buildPlaylist } from "../search/builder.js";
 import { ParsedPrompt } from "../search/parse.js";
 import { searchCandidates, SearchResult } from "../search/query.js";
-import { FunnelStats, PreviewResponse } from "./contract.js";
+import { FunnelFilter, FunnelStats, PreviewResponse } from "./contract.js";
 
 function describeHardFilters(filters: ParsedPrompt, relaxedEnergy: boolean): string | null {
 
@@ -23,10 +23,19 @@ function toFunnelStats(filters: ParsedPrompt, result: SearchResult, selected: nu
 	const steps: FunnelStats["steps"] = [];
 
 	const hardLabel = describeHardFilters(filters, result.relaxedEnergy);
-	if (hardLabel) steps.push({ label: hardLabel, count: result.hardFilteredCount });
+
+	if (hardLabel) {
+
+		const hardFilters: FunnelFilter[] = [];
+		if (filters.languages?.length) hardFilters.push("languages");
+		if (!result.relaxedEnergy && (filters.energyMin !== undefined || filters.energyMax !== undefined)) hardFilters.push("energy");
+
+		steps.push({ label: hardLabel, count: result.hardFilteredCount, filters: hardFilters });
+
+	};
 
 	if (filters.moods?.length) {
-		steps.push({ label: `Mood: ${filters.moods.join(", ")}`, count: result.candidates.length });
+		steps.push({ label: `Mood: ${filters.moods.join(", ")}`, count: result.candidates.length, filters: ["moods"] });
 	}
 
 	const shortfall = selected < filters.size;

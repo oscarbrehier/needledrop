@@ -1,5 +1,5 @@
 import { ArrowUp, Minus, Plus } from "lucide-react";
-import { MAX_TRACKS, MIN_TRACKS } from "./page";
+import { MAX_TRACKS, MIN_TRACKS, type StatsState } from "./page";
 
 const SUGGESTIONS = [
 	"late-night jazz for cooking",
@@ -12,21 +12,25 @@ const SUGGESTIONS = [
 type PromptPanelProps = {
 	prompt: string;
 	onPromptChange: (value: string) => void;
-	maxTracks: number;
+	size: number;
 	onDecrease: () => void;
 	onIncrease: () => void;
 	canSubmit: boolean;
 	onSubmit: () => void;
+	stats: StatsState;
+	onRetryStats: () => void;
 };
 
 export function PromptPanel({
 	prompt,
 	onPromptChange,
-	maxTracks,
+	size,
 	onDecrease,
 	onIncrease,
 	canSubmit,
 	onSubmit,
+	stats,
+	onRetryStats,
 }: PromptPanelProps) {
 
 	return (
@@ -35,7 +39,7 @@ export function PromptPanel({
 
 			<div className="flex animate-fade-up flex-col items-center gap-2.5 text-center">
 				<h1 className="font-display text-title-1 md:text-display">What should we play?</h1>
-				<p className="text-[15px] tabular-nums text-muted">Drawn from your X recordings.</p>
+				<LibrarySummary stats={stats} onRetry={onRetryStats} />
 			</div>
 
 			<form
@@ -65,21 +69,21 @@ export function PromptPanel({
 							type="button"
 							aria-label="Fewer tracks"
 							onClick={onDecrease}
-							disabled={maxTracks <= MIN_TRACKS}
+							disabled={size <= MIN_TRACKS}
 							className="grid size-8 place-items-center rounded-[9px] text-secondary transition-colors duration-150 enabled:hover:bg-surface-overlay enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
 						>
 							<Minus size={12} strokeWidth={2.2} aria-hidden="true" />
 						</button>
 
 						<span aria-live="polite" className="min-w-[70px] text-center text-small font-semibold tabular-nums">
-							{maxTracks} <span className="font-normal text-muted">tracks</span>
+							{size} <span className="font-normal text-muted">tracks</span>
 						</span>
 
 						<button
 							type="button"
 							aria-label="More tracks"
 							onClick={onIncrease}
-							disabled={maxTracks >= MAX_TRACKS}
+							disabled={size >= MAX_TRACKS}
 							className="grid size-8 place-items-center rounded-[9px] text-secondary transition-colors duration-150 enabled:hover:bg-surface-overlay enabled:hover:text-primary disabled:cursor-not-allowed disabled:opacity-30"
 						>
 							<Plus size={12} strokeWidth={2.2} aria-hidden="true" />
@@ -120,5 +124,40 @@ export function PromptPanel({
 		</div>
 
 	);
+
+};
+
+function LibrarySummary({ stats, onRetry }: { stats: StatsState; onRetry: () => void }) {
+
+	const base = "min-h-[22px] text-[15px] tabular-nums text-muted";
+
+	switch (stats.status) {
+
+		case "loading":
+			return <p role="status" className={base}>Counting your recordings…</p>;
+
+		case "error":
+
+			return (
+
+				<p role="alert" className={base}>
+					Couldn’t load your library stats ({stats.message}).{" "}
+					<button type="button" onClick={onRetry} className="font-medium text-secondary underline underline-offset-2 hover:text-primary">
+						Retry
+					</button>
+				</p>
+
+			);
+
+		case "done": {
+
+			const { total, embedded } = stats.data;
+			const searchable = embedded < total ? `, ${embedded.toLocaleString()} of them searchable` : "";
+
+			return <p className={base}>Drawn from your {total.toLocaleString()} recordings{searchable}.</p>;
+
+		};
+
+	};
 
 };

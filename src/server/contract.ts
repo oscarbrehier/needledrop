@@ -33,11 +33,14 @@ export const TrackResult = z.object({
 	durationS: z.number().int().nullable()
 });
 
+export const FunnelFilter = z.enum(["languages", "energy", "moods"]);
+
 export const FunnelStats = z.object({
 	libraryTotal: z.number().int(),
 	steps: z.array(z.object({
 		label: z.string(),
-		count: z.number().int()
+		count: z.number().int(),
+		filters: z.array(FunnelFilter)
 	})),
 	relaxed: z.array(z.string()),
 	dropped: z.number().int().nullable(),
@@ -72,6 +75,7 @@ export const ErrorResponse = z.object({
 export type LibraryStats = z.infer<typeof LibraryStats>;
 export type ParseRequest = z.infer<typeof ParseRequest>;
 export type TrackResult = z.infer<typeof TrackResult>;
+export type FunnelFilter = z.infer<typeof FunnelFilter>;
 export type FunnelStats = z.infer<typeof FunnelStats>;
 export type PreviewResponse = z.infer<typeof PreviewResponse>;
 export type SaveRequest = z.infer<typeof SaveRequest>;

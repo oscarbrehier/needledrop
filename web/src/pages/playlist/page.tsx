@@ -1,125 +1,221 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import * as api from "../../api";
 import { PromptPanel } from "./PromptPanel";
 import { GeneratingPanel } from "./GeneratingPanel";
-import { mockGenerate } from "./mock";
-import type { GenerationProgress } from "./types";
+import type { FunnelStats, LibraryStats, ParsedPrompt, ParseRequest, TrackResult } from "./types";
 
-export type GenerationOptions = {
-	maxTracks: number;
-};
-
-export type GenerationRequest = { prompt: string; size: number };
-
-type Phase =
+export type CallState =
 	| { status: "idle" }
-	| { status: "active"; request: GenerationRequest; progress: GenerationProgress }
-	| { status: "error"; request: GenerationRequest; message: string };
+	| { status: "loading" }
+	| { status: "error"; message: string }
+	| { status: "done" };
+
+export type StatsState =
+	| { status: "loading" }
+	| { status: "error"; message: string }
+	| { status: "done"; data: LibraryStats };
 
 export const MIN_TRACKS = 1;
-export const MAX_TRACKS = 1_000;
+export const MAX_TRACKS = 100;
+
+const IDLE: CallState = { status: "idle" };
 
 export default function PlaylistPage() {
 
-	const [phase, setPhase] = useState<Phase>({ status: "idle" });
 	const [prompt, setPrompt] = useState<string>("");
-	const [options, setOptions] = useState<GenerationOptions>({
-		maxTracks: 25,
-	});
+	const [size, setSize] = useState<number>(25);
+	const [stats, setStats] = useState<StatsState>({ status: "loading" });
 
-	const controllerRef = useRef<AbortController | null>(null);
+	const [request, setRequest] = useState<ParseRequest | null>(null);
+	const [parse, setParse] = useState<CallState>(IDLE);
+	const [filters, setFilters] = useState<ParsedPrompt | null>(null);
+	const [preview, setPreview] = useState<CallState>(IDLE);
+	const [funnel, setFunnel] = useState<FunnelStats | null>(null);
+	const [elapsedMs, setElapsedMs] = useState<number | null>(null);
+	const [tracks, setTracks] = useState<TrackResult[]>([]);
+	const [edited, setEdited] = useState<boolean>(false);
 
-	useEffect(() => () => controllerRef.current?.abort(), []);
+	const parseController = useRef<AbortController | null>(null);
+	const previewController = useRef<AbortController | null>(null);
 
-	const canSubmit = prompt.trim() !== "";
+	const loadStats = useCallback((signal?: AbortSignal) => {
 
-	function decreaseMaxTracks() {
-		setOptions((prev) => ({ ...prev, maxTracks: Math.max(MIN_TRACKS, prev.maxTracks - 1) }));
+		api.getLibraryStats(signal)
+			.then((data) => setStats({ status: "done", data }))
+			.catch((err) => {
+				if (signal?.aborted) return;
+				setStats({ status: "error", message: api.errorMessage(err) });
+			});
+
+	}, []);
+
+	useEffect(() => {
+		const controller = new AbortController();
+		loadStats(controller.signal);
+		return () => controller.abort();
+	}, [loadStats]);
+
+	useEffect(() => () => {
+		parseController.current?.abort();
+		previewController.current?.abort();
+	}, []);
+
+	function abortAll() {
+		parseController.current?.abort();
+		previewController.current?.abort();
 	};
 
-	function increaseMaxTracks() {
-		setOptions((prev) => ({ ...prev, maxTracks: Math.min(MAX_TRACKS, prev.maxTracks + 1) }));
-	};
+	async function runPreview(next: ParsedPrompt, startedAt = performance.now()) {
 
-	function generate() {
-		if (!canSubmit) return;
-		run({ prompt: prompt.trim(), size: options.maxTracks });
-	};
-
-	function cancel() {
-		setPhase({ status: "idle" });
-	};
-
-	async function run(request: GenerationRequest) {
-
-		controllerRef.current?.abort();
+		previewController.current?.abort();
 
 		const controller = new AbortController();
-		controllerRef.current = controller;
+		previewController.current = controller;
+
+		setPreview({ status: "loading" });
 
 		try {
 
-			await mockGenerate(
-				request,
-				(progress) => setPhase({ status: "active", request, progress }),
-				controller.signal,
-			);
+			const result = await api.preview(next, controller.signal);
+			if (controller.signal.aborted) return;
+
+			setTracks(result.tracks);
+			setFunnel(result.stats);
+			setEdited(false);
+			setElapsedMs(performance.now() - startedAt);
+			setPreview({ status: "done" });
 
 		} catch (err) {
 			if (controller.signal.aborted) return;
-			setPhase({ status: "error", request, message: err instanceof Error ? err.message : String(err) });
+			setPreview({ status: "error", message: api.errorMessage(err) });
 		};
 
 	};
 
-	function stop() {
-		controllerRef.current?.abort();
-		setPhase({ status: "idle" });
+	async function generate(req: ParseRequest) {
+
+		abortAll();
+
+		const controller = new AbortController();
+		parseController.current = controller;
+		const startedAt = performance.now();
+
+		setRequest(req);
+		setFilters(null);
+		setTracks([]);
+		setFunnel(null);
+		setEdited(false);
+		setElapsedMs(null);
+		setPreview(IDLE);
+		setParse({ status: "loading" });
+
+		let parsed: ParsedPrompt;
+
+		try {
+			parsed = await api.parsePrompt(req, controller.signal);
+		} catch (err) {
+			if (controller.signal.aborted) return;
+			setParse({ status: "error", message: api.errorMessage(err) });
+			return;
+		};
+
+		if (controller.signal.aborted) return;
+
+		setParse({ status: "done" });
+		setFilters(parsed);
+		void runPreview(parsed, startedAt);
+
 	};
 
-	function renderPhase() {
+	function submit() {
+		const trimmed = prompt.trim();
+		if (trimmed === "") return;
+		void generate({ prompt: trimmed, size });
+	};
 
-		switch (phase.status) {
+	function backToPrompt() {
+		abortAll();
+		setRequest(null);
+		setParse(IDLE);
+		setPreview(IDLE);
+	};
 
-			case "idle":
+	function changeFilters(next: ParsedPrompt) {
+		setFilters(next);
+		void runPreview(next);
+	};
 
-				return (
+	function rerunPreview() {
+		if (filters) void runPreview(filters);
+	};
 
-					<PromptPanel
-						prompt={prompt}
-						onPromptChange={setPrompt}
-						maxTracks={options.maxTracks}
-						onDecrease={decreaseMaxTracks}
-						onIncrease={increaseMaxTracks}
-						canSubmit={canSubmit}
-						onSubmit={generate}
-					/>
+	function removeTrack(index: number) {
+		setTracks((prev) => prev.filter((_, i) => i !== index));
+		setEdited(true);
+	};
 
-				);
+	function moveTrack(from: number, to: number) {
 
-			case "active":
+		if (from === to) return;
 
-				return (
+		setTracks((prev) => {
+			if (to < 0 || to >= prev.length) return prev;
+			const next = [...prev];
+			const [moved] = next.splice(from, 1);
+			next.splice(to, 0, moved!);
+			return next;
+		});
 
-					<GeneratingPanel
-						request={phase.request}
-						progress={phase.progress}
-						onStop={stop}
-						onRegenerate={() => run(phase.request)}
-					/>
+		setEdited(true);
 
-				);
+	};
 
-			default:
-				return null;
+	if (request === null) {
 
-		};
+		return (
+
+			<div className="flex w-full flex-1 flex-col items-center">
+				<PromptPanel
+					prompt={prompt}
+					onPromptChange={setPrompt}
+					size={size}
+					onDecrease={() => setSize((s) => Math.max(MIN_TRACKS, s - 1))}
+					onIncrease={() => setSize((s) => Math.min(MAX_TRACKS, s + 1))}
+					canSubmit={prompt.trim() !== ""}
+					onSubmit={submit}
+					stats={stats}
+					onRetryStats={() => {
+						setStats({ status: "loading" });
+						loadStats();
+					}}
+				/>
+			</div>
+
+		);
 
 	};
 
 	return (
 
 		<div className="flex w-full flex-1 flex-col items-center">
-			{renderPhase()}
+			<GeneratingPanel
+				request={request}
+				parse={parse}
+				filters={filters}
+				preview={preview}
+				funnel={funnel}
+				elapsedMs={elapsedMs}
+				tracks={tracks}
+				edited={edited}
+				onCancel={backToPrompt}
+				onNewPrompt={backToPrompt}
+				onRetryParse={() => void generate(request)}
+				onFiltersChange={changeFilters}
+				onRetryPreview={rerunPreview}
+				onRegenerate={rerunPreview}
+				onRemoveTrack={removeTrack}
+				onMoveTrack={moveTrack}
+			/>
 		</div>
 
 	);

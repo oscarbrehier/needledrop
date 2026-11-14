@@ -1,31 +1,63 @@
-import { type Confidence } from "../library/page";
+// Mirrors src/server/contract.ts until web/ imports those types directly.
 
-export type GenerationRequest = { prompt: string; size: number };
+export type Confidence = "low" | "medium" | "high";
+
+export type LibraryStats = {
+	total: number;
+	tagged: number;
+	embedded: number;
+	lowConfidence: number;
+};
+
+export type ParseRequest = { prompt: string; size: number };
 
 export type ParsedPrompt = {
-	filters: { language?: string; energyMin?: number; energyMax?: number };
+	languages?: string[];
+	energyMin?: number;
+	energyMax?: number;
+	moods?: string[];
 	semantic: string;
 	size: number;
 };
 
-export type PlaylistTrack = {
+export type TrackResult = {
 	isrc: string;
+	tidalId: string;
 	title: string;
 	artist: string | null;
-	durationS: number | null;
 	moods: string[];
-	energy: number | null;
-	confidence: Confidence | null;
+	energy: number;
+	languages: string[];
+	description: string;
+	confidence: Confidence;
 	distance: number;
+	score: number;
+	durationS: number | null;
 };
 
-export type GenerationResult = {
-	tracks: PlaylistTrack[];
+export type FunnelFilter = "languages" | "energy" | "moods";
+
+export type FunnelStats = {
+	libraryTotal: number;
+	steps: { label: string; count: number; filters: FunnelFilter[] }[];
 	relaxed: string[];
-	elapsedMs: number;
+	dropped: number | null;
+	selected: number;
+	requested: number;
 };
 
-export type GenerationProgress =
-	| { stage: "reading" }
-	| { stage: "building"; parsed: ParsedPrompt }
-	| { stage: "done"; parsed: ParsedPrompt; result: GenerationResult };
+export type PreviewResponse = { tracks: TrackResult[]; stats: FunnelStats };
+
+export type SaveRequest = {
+	name?: string;
+	prompt: string;
+	filters: ParsedPrompt;
+	isrcs: string[];
+};
+
+export type SaveResponse = {
+	tidalId: string;
+	name: string;
+	trackCount: number;
+	url: string;
+};
