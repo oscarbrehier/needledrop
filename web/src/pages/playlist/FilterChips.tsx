@@ -2,7 +2,7 @@ import { Minus, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { MAX_TRACKS, MIN_TRACKS } from "./page";
 import { capitalize, removeFilter } from "./filters";
-import type { ParsedPrompt } from "./types";
+import type { ParsedPrompt } from "@contract";
 
 const ENERGY_LEVELS = [1, 2, 3, 4, 5];
 const CHIP = "inline-flex h-[26px] items-center gap-1 rounded-sm bg-surface-overlay text-small tabular-nums text-secondary";

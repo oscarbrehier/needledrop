@@ -1,4 +1,4 @@
-import type { FunnelFilter, ParsedPrompt } from "./types";
+import type { FunnelFilter, ParsedPrompt } from "@contract";
 
 export function capitalize(text: string): string {
 	return text.charAt(0).toUpperCase() + text.slice(1);

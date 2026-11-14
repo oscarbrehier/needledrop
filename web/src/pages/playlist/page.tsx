@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../../api";
 import { PromptPanel } from "./PromptPanel";
 import { GeneratingPanel } from "./GeneratingPanel";
-import type { FunnelStats, LibraryStats, ParsedPrompt, ParseRequest, TrackResult } from "./types";
+import type { FunnelStats, LibraryStats, ParsedPrompt, ParseRequest, TrackResult } from "@contract";
 
 export type CallState =
 	| { status: "idle" }

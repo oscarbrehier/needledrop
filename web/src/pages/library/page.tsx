@@ -1,24 +1,7 @@
+import type { Confidence, Recording } from "@contract";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-export type Confidence = "low" | "medium" | "high";
-
-type Tags = {
-	languages: string[];
-	moods: string[];
-	energy: number;
-	description: string;
-	confidence: Confidence;
-};
-
-export type OverrideField = "languages" | "moods" | "energy";
-
-export type Recording = {
-	isrc: string;
-	title: string;
-	artist: string | null;
-	tags: Tags | null;
-	overridden: OverrideField[];
-};
+type Tags = NonNullable<Recording["tags"]>;
 
 export type TagStatus = "all" | "tagged" | "untagged";
 

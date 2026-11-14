@@ -1,7 +1,7 @@
 import { ExternalLink, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import * as api from "../../api";
-import type { ParsedPrompt, SaveResponse, TrackResult } from "./types";
+import type { ParsedPrompt, SaveResponse, TrackResult } from "@contract";
 
 type SaveState =
 	| { status: "idle" }

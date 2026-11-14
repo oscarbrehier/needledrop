@@ -1,4 +1,4 @@
-import type { Confidence, Recording } from "../pages/library/page";
+import type { Confidence, Recording } from "@contract";
 
 const CONFIDENCE_STYLES: Record<Confidence, string> = {
 	high: "bg-emerald-100 text-emerald-800",

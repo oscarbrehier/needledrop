@@ -1,0 +1,20 @@
+{
+  // Emits declarations for src/ so web/ reads src/server/contract.ts as .d.ts instead of
+  // re-checking back-end source under the app's options. Module settings follow the app,
+  // not the root: zod ships CommonJS typings, and `import z from "zod"` means a different
+  // thing under NodeNext than under bundler, which would leave the emitted types as any.
+  // The root's `pnpm typecheck` still checks src/ under NodeNext.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "..",
+    "outDir": "./node_modules/.tmp/contract",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.contract.tsbuildinfo"
+  },
+  "include": ["../src"]
+}

@@ -5,7 +5,7 @@ import type {
 	PreviewResponse,
 	SaveRequest,
 	SaveResponse,
-} from "./pages/playlist/types";
+} from "@contract";
 
 type ErrorBody = {
 	error?: string;

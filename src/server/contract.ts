@@ -2,6 +2,10 @@ import z from "zod";
 import { MOODS, type Mood } from "../tag/moods.js";
 import { ParsedPrompt } from "../search/parse.js";
 
+export { ParsedPrompt };
+export type { OverrideField, RecordingRow as Recording } from "../db/browse.js";
+export type { Mood };
+
 const MOOD_NAMES = Object.keys(MOODS) as [Mood, ...Mood[]];
 const Confidence = z.enum(["low", "medium", "high"]);
 const Energy = z.number().int().min(1).max(5);
@@ -72,6 +76,7 @@ export const ErrorResponse = z.object({
 	code: z.string().optional()
 });
 
+export type Confidence = z.infer<typeof Confidence>;
 export type LibraryStats = z.infer<typeof LibraryStats>;
 export type ParseRequest = z.infer<typeof ParseRequest>;
 export type TrackResult = z.infer<typeof TrackResult>;

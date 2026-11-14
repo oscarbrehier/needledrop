@@ -4,7 +4,7 @@ import { FilterChips } from "./FilterChips";
 import { describeFilter, removeFilter } from "./filters";
 import type { CallState } from "./page";
 import { SaveDialog } from "./SaveDialog";
-import type { FunnelStats, ParsedPrompt, ParseRequest, TrackResult } from "./types";
+import type { FunnelStats, ParsedPrompt, ParseRequest, TrackResult } from "@contract";
 
 type GeneratingPanelProps = {
 	request: ParseRequest;
