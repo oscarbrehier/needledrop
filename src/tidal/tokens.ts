@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { tidalTokenPath } from "../config.js";
 
 export type StoredTokens = {
 	accessToken: string;
@@ -7,14 +8,12 @@ export type StoredTokens = {
 	expiresAt: number;
 };
 
-const TOKEN_PATH = "data/tidal-token.json";
-
 export function saveTokens(tokens: StoredTokens) {
-	mkdirSync(dirname(TOKEN_PATH), { recursive: true });
-	writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
+	mkdirSync(dirname(tidalTokenPath), { recursive: true });
+	writeFileSync(tidalTokenPath, JSON.stringify(tokens));
 };
 
 export function loadTokens(): StoredTokens | null {
-	if (!existsSync(TOKEN_PATH)) return null;
-	return JSON.parse(readFileSync(TOKEN_PATH, "utf-8"));
+	if (!existsSync(tidalTokenPath)) return null;
+	return JSON.parse(readFileSync(tidalTokenPath, "utf-8"));
 };
