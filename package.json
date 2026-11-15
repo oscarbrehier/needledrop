@@ -15,7 +15,7 @@
   "packageManager": "pnpm@10.29.3",
   "dependencies": {
     "@hono/node-server": "^2.1.5",
-    "@huggingface/transformers": "^4.3.0",
+    "@huggingface/transformers": "4.3.0",
     "@tidal-music/api": "^0.50.0",
     "@tidal-music/auth": "^1.6.2",
     "better-sqlite3": "^13.0.3",
