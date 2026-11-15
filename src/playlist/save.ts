@@ -16,6 +16,23 @@ export type SavedPlaylist = {
 	trackCount: number;
 };
 
+// The playlist exists in Tidal but holds only some of its tracks. Callers should
+// point at that playlist rather than retry, which would create a second one.
+export class PartialSaveError extends Error {
+
+	readonly added: number;
+	readonly total: number;
+
+	constructor(readonly tidalId: string, readonly playlistName: string, error: AddItemsError) {
+		const reason = error.cause instanceof Error ? error.cause.message : String(error.cause);
+		super(`Created "${playlistName}" in Tidal (${tidalId}), but only ${error.added} of ${error.total} tracks were added before a request failed: ${reason}`, { cause: error });
+		this.name = "PartialSaveError";
+		this.added = error.added;
+		this.total = error.total;
+	};
+
+};
+
 export async function savePlaylist({ name, prompt, filters, isrcs }: SavePlaylistInput): Promise<SavedPlaylist> {
 
 	const trackIds = isrcs
@@ -35,7 +52,7 @@ export async function savePlaylist({ name, prompt, filters, isrcs }: SavePlaylis
 		await addItems(tidalId, trackIds);
 	} catch (err) {
 		if (!(err instanceof AddItemsError)) throw err;
-		throw new Error(`Created "${playlistName}" in Tidal (${tidalId}), but only ${err.added} of ${err.total} tracks were added before a request failed: ${err.cause instanceof Error ? err.cause.message : String(err.cause)}`, { cause: err });
+		throw new PartialSaveError(tidalId, playlistName, err);
 	};
 
 	return { tidalId, name: playlistName, trackCount: trackIds.length };
