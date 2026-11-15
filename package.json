@@ -6,7 +6,8 @@
   "scripts": {
     "test": "tsx --test tests/*.test.ts",
     "dev": "tsx --env-file=.env src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "pnpm --dir web install --ignore-workspace"
   },
   "keywords": [],
   "author": "",
