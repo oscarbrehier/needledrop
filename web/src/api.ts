@@ -1,4 +1,5 @@
 import type {
+	ErrorResponse,
 	LibraryStats,
 	ParsedPrompt,
 	ParseRequest,
@@ -7,33 +8,58 @@ import type {
 	SaveResponse,
 } from "@contract";
 
-type ErrorBody = {
-	error?: string;
+// onError adds Zod's issues to validation errors; they are not part of ErrorResponse.
+export type ApiErrorBody = ErrorResponse & {
 	issues?: { path?: (string | number)[]; message?: string }[];
 };
 
-function describeError(body: unknown, res: Response): string {
+// Thrown for any non-OK response. `body` is the parsed error body, or null when the
+// response was not a JSON error (a proxy failure, for example).
+export class ApiError extends Error {
 
-	const { error, issues } = (body ?? {}) as ErrorBody;
+	readonly status: number;
+	readonly body: ApiErrorBody | null;
 
-	if (!error) return `HTTP ${res.status} ${res.statusText}`.trim();
+	constructor(status: number, body: ApiErrorBody | null, message: string) {
+		super(message);
+		this.name = "ApiError";
+		this.status = status;
+		this.body = body;
+	};
 
-	const first = issues?.[0];
-	if (!first?.message) return error;
+	get code(): string | undefined {
+		return this.body?.code;
+	};
+
+};
+
+function isErrorBody(value: unknown): value is ApiErrorBody {
+	return typeof value === "object" && value !== null && typeof (value as { error?: unknown }).error === "string";
+};
+
+function describeError(body: ApiErrorBody | null, res: Response): string {
+
+	if (!body) return `HTTP ${res.status} ${res.statusText}`.trim();
+
+	const first = body.issues?.[0];
+	if (!first?.message) return body.error;
 
 	const path = first.path?.length ? `${first.path.join(".")}: ` : "";
-	return `${error} (${path}${first.message})`;
+	return `${body.error} (${path}${first.message})`;
 
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 	const res = await fetch(path, init);
-	const body: unknown = await res.json().catch(() => null);
+	const parsed: unknown = await res.json().catch(() => null);
 
-	if (!res.ok) throw new Error(describeError(body, res));
+	if (!res.ok) {
+		const body = isErrorBody(parsed) ? parsed : null;
+		throw new ApiError(res.status, body, describeError(body, res));
+	};
 
-	return body as T;
+	return parsed as T;
 
 };
 

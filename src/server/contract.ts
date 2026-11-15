@@ -73,7 +73,12 @@ export const SaveResponse = z.object({
 
 export const ErrorResponse = z.object({
 	error: z.string(),
-	code: z.string().optional()
+	code: z.string().optional(),
+	// Set with code "partial_save": the playlist exists in Tidal with only some tracks.
+	tidalId: z.string().optional(),
+	playlistName: z.string().optional(),
+	added: z.number().int().optional(),
+	total: z.number().int().optional()
 });
 
 export type Confidence = z.infer<typeof Confidence>;

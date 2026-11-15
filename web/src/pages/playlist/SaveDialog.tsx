@@ -7,7 +7,33 @@ type SaveState =
 	| { status: "idle" }
 	| { status: "saving" }
 	| { status: "error"; message: string }
+	| { status: "partial"; partial: PartialSave }
 	| { status: "done"; result: SaveResponse };
+
+// The playlist was created but only some tracks went in. Retrying would create a
+// second playlist, so this state links to the first one instead of offering Retry.
+type PartialSave = {
+	tidalId: string;
+	playlistName: string;
+	added: number;
+	total: number;
+	message: string;
+};
+
+function toPartialSave(err: unknown): PartialSave | null {
+
+	if (!(err instanceof api.ApiError) || err.code !== "partial_save") return null;
+
+	const { tidalId, playlistName, added, total } = err.body ?? {};
+	if (tidalId === undefined || playlistName === undefined || added === undefined || total === undefined) return null;
+
+	return { tidalId, playlistName, added, total, message: err.message };
+
+};
+
+function playlistUrl(tidalId: string): string {
+	return `https://tidal.com/browse/playlist/${encodeURIComponent(tidalId)}`;
+};
 
 type SaveDialogProps = {
 	open: boolean;
@@ -63,7 +89,8 @@ export function SaveDialog({ open, onClose, prompt, filters, tracks }: SaveDialo
 			setState({ status: "done", result });
 
 		} catch (err) {
-			setState({ status: "error", message: api.errorMessage(err) });
+			const partial = toPartialSave(err);
+			setState(partial ? { status: "partial", partial } : { status: "error", message: api.errorMessage(err) });
 		};
 
 	};
@@ -97,6 +124,40 @@ export function SaveDialog({ open, onClose, prompt, filters, tracks }: SaveDialo
 						<button type="button" onClick={onClose} className={SECONDARY}>Done</button>
 						<a
 							href={state.result.url}
+							target="_blank"
+							rel="noreferrer"
+							className={`${PRIMARY} inline-flex items-center gap-2`}
+						>
+							Open in Tidal
+							<ExternalLink size={14} strokeWidth={2.2} aria-hidden="true" />
+						</a>
+					</div>
+
+				</div>
+
+			) : state.status === "partial" ? (
+
+				<div className="flex flex-col gap-4 p-6">
+
+					<h2 id="save-dialog-title" className="font-display text-title-3">Only partly saved</h2>
+
+					<p role="alert" className="flex items-start gap-2 rounded-md border border-warning/45 bg-warning-soft px-3 py-2.5 text-body text-primary">
+						<TriangleAlert className="mt-1 size-4 shrink-0 text-warning" aria-hidden="true" />
+						<span className="tabular-nums">
+							Created “{state.partial.playlistName}” with {state.partial.added} of {state.partial.total} tracks.
+						</span>
+					</p>
+
+					<p className="text-small text-secondary">
+						Add the missing tracks in Tidal. Saving again would create a second playlist.
+					</p>
+
+					<p className="font-mono text-caption font-normal text-muted">{state.partial.message}</p>
+
+					<div className="flex justify-end gap-2 pt-2">
+						<button type="button" onClick={onClose} className={SECONDARY}>Close</button>
+						<a
+							href={playlistUrl(state.partial.tidalId)}
 							target="_blank"
 							rel="noreferrer"
 							className={`${PRIMARY} inline-flex items-center gap-2`}

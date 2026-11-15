@@ -3,11 +3,11 @@ import { libraryStats, listRecordings } from "../db/browse.js";
 import { serve } from "@hono/node-server";
 import { HttpError, readBody } from "./errors.js";
 import { ZodError } from "zod";
-import { ParseRequest, SaveRequest } from "./contract.js";
+import { type ErrorResponse, ParseRequest, SaveRequest } from "./contract.js";
 import { ParsedPrompt, parsePrompt } from "../search/parse.js";
 import { buildPreview } from "./preview.js";
 import { embed } from "../embed/embedder.js";
-import { savePlaylist } from "../playlist/save.js";
+import { PartialSaveError, savePlaylist } from "../playlist/save.js";
 
 export const app = new Hono();
 
@@ -50,6 +50,23 @@ app.onError((err, c) => {
 
 	if (err instanceof ZodError) {
 		return c.json({ error: "Invalid request", issues: err.issues }, 400);
+	};
+
+	if (err instanceof PartialSaveError) {
+
+		console.error(err);
+
+		const body: ErrorResponse = {
+			error: err.message,
+			code: "partial_save",
+			tidalId: err.tidalId,
+			playlistName: err.playlistName,
+			added: err.added,
+			total: err.total
+		};
+
+		return c.json(body, 502);
+
 	};
 
 	console.error(err);
