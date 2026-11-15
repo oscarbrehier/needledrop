@@ -9,14 +9,7 @@ export const DIMENSIONS = 1024;
 
 let extractor: Promise<FeatureExtractionPipeline> | undefined;
 
-// transformers.js (4.3.0) leaks model file errors as unhandled rejections instead
-// of rejecting pipeline(): session.js only awaits the core .onnx promise after the
-// external data has loaded, and model-loader.js loads each .onnx_data chunk inside an
-// async Promise executor. A missing or undownloadable file therefore crashes the
-// process, and pipeline() never settles. While loading, those rejections are routed
-// to the pending load so embed() rejects normally; late duplicates from a load that
-// already failed are only logged. Any other unhandled rejection is re-raised, as Node
-// would by default.
+// Rejects the load in progress; set only while loadExtractor() is waiting.
 let failPendingLoad: ((error: unknown) => void) | undefined;
 let listening = false;
 
@@ -24,6 +17,20 @@ function fromTransformers(reason: unknown): boolean {
 	return reason instanceof Error && /@huggingface[\\/]transformers/.test(reason.stack ?? "");
 };
 
+// Works around a bug in @huggingface/transformers 4.3.0 (pinned in package.json):
+// a model file that is missing or fails to download never rejects pipeline().
+//  - src/models/session.js starts getCoreModelFile() but only awaits it after
+//    getModelDataFiles(), so a failed .onnx load rejects with no handler attached.
+//  - src/utils/model-loader.js loads each .onnx_data chunk inside
+//    `new Promise(async (resolve, reject) => ...)`, so a throw there escapes the
+//    executor and that promise never settles.
+// Both surface as unhandled rejections, which crash Node by default, while
+// pipeline() hangs forever. bge-m3 uses external data, so it hits both.
+// This handler routes rejections from transformers.js to the pending load so
+// embed() rejects normally. A late duplicate from a load that already failed is
+// only logged. Anything else is re-thrown, which keeps Node's default crash.
+// Before upgrading the library, check whether both spots are fixed; if so, drop
+// this handler and loadExtractor()'s race.
 function onUnhandledRejection(reason: unknown) {
 	if (!fromTransformers(reason)) {
 		process.nextTick(() => { throw reason; });
